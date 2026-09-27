@@ -1,0 +1,60 @@
+@import "@fontsource-variable/fraunces/soft.css";
+@import "@fontsource-variable/fraunces/soft-italic.css";
+@import "@fontsource-variable/nunito/wght.css";
+@import "@fontsource/caveat-brush/400.css";
+
+:root {
+  /* palette */
+  --blush: #f4b6c2;
+  --powder: #f9dde3;
+  --plum: #4a183d;
+  --choc: #24171b;
+  --cream: #fff7ee;
+  --butter: #f6d77a;
+  --lilac: #c9b8e8;
+  --paper: #fffbf6;
+
+  /* text roles: dark ink on light paper */
+  --text: var(--choc);
+  --text-soft: rgba(36, 23, 27, 0.8);
+  --text-mute: rgba(36, 23, 27, 0.66);
+  --heading: var(--plum);
+
+  /* lines & surfaces */
+  --line: rgba(74, 24, 61, 0.2);
+  --line-strong: var(--plum);
+  --surface: rgba(255, 251, 246, 0.72);
+
+  /* sticker shadows: hard offsets, not blurs */
+  --shadow-sm: 3px 3px 0 var(--choc);
+  --shadow: 5px 5px 0 var(--choc);
+  --shadow-soft: 5px 5px 0 var(--plum);
+
+  /* type */
+  --font-display: "Fraunces Variable", "Cooper Black", "Recoleta", Georgia, serif;
+  --font-ui: "Nunito Variable", "Nunito", "Avenir Next", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-hand: "Caveat Brush", "Segoe Print", "Bradley Hand", cursive;
+
+  /* rhythm */
+  --gutter: clamp(20px, 5vw, 56px);
+  --radius: 22px;
+  --radius-sm: 14px;
+  --nav-h: 64px;
+  --content-max: 1280px;
+
+  /* game master layout (set by the shell) */
+  --gm-w: 0px;
+
+  /* motion */
+  --ease: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  color-scheme: light;
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  :root {
+    --nav-h: 52px;
+  }
+}

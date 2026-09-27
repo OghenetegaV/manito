@@ -1,0 +1,249 @@
+@import "./tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+blockquote,
+ul,
+ol,
+dl,
+dd {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+::selection {
+  background: var(--butter);
+  color: var(--choc);
+}
+
+:focus-visible {
+  outline: 3px solid var(--plum);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- type ---------- */
+
+.eyebrow {
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--plum);
+}
+
+/* highlighter-pen label */
+.eyebrow--accent {
+  display: inline-block;
+  padding: 3px 10px;
+  color: var(--choc);
+  background: var(--butter);
+  border-radius: 6px;
+  transform: rotate(-1.5deg);
+}
+
+.hand {
+  font-family: var(--font-hand);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--heading);
+}
+
+.display-xl {
+  font-size: clamp(2.75rem, 9vw, 6.5rem);
+}
+
+.display-lg {
+  font-size: clamp(2.25rem, 6.4vw, 4.5rem);
+}
+
+.display-md {
+  font-size: clamp(1.625rem, 3.4vw, 2.5rem);
+  line-height: 1.08;
+}
+
+.italic {
+  font-style: italic;
+  font-weight: 500;
+}
+
+.lede {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.1875rem, 2.3vw, 1.5rem);
+  line-height: 1.3;
+  color: var(--text-soft);
+}
+
+.rule {
+  width: 56px;
+  height: 4px;
+  background: var(--butter);
+  border: 0;
+  border-radius: 4px;
+  margin: 0;
+}
+
+/* ---------- scenes ---------- */
+
+.scene {
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: clamp(20px, 3.4vh, 36px);
+  padding-block: clamp(20px, 4vh, 48px);
+}
+
+@media (max-width: 640px) {
+  .scene {
+    gap: clamp(14px, 2.2vh, 20px);
+    padding-block: 8px 16px;
+  }
+
+  .hide-sm {
+    display: none;
+  }
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+/* phones: the primary action comes first, so it is never the thing left under the Game Master's dock */
+@media (max-width: 480px) {
+  .actions {
+    flex-direction: column-reverse;
+    width: 100%;
+  }
+}
+
+.numeral {
+  font-variant-numeric: tabular-nums;
+}
+
+/* rubber-stamp label */
+.stamp {
+  display: inline-block;
+  padding: 4px 12px 2px;
+  font-family: var(--font-hand);
+  font-size: 1.25rem;
+  letter-spacing: 0.08em;
+  color: var(--plum);
+  border: 3px solid var(--plum);
+  border-radius: 8px;
+  outline: 1.5px solid var(--plum);
+  outline-offset: 2px;
+  transform: rotate(-6deg);
+  opacity: 0.88;
+  text-transform: uppercase;
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* ---------- reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

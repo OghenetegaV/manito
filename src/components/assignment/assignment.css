@@ -1,0 +1,175 @@
+/* ---------- the draw ---------- */
+
+.shuffle {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.acard {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: var(--paper);
+  border: 2.5px dashed var(--plum);
+  border-radius: var(--radius);
+  transition:
+    background-color 0.5s var(--ease-out),
+    box-shadow 0.4s var(--ease-out);
+  color: var(--text-mute);
+}
+
+.acard__index {
+  font-family: var(--font-hand);
+  font-size: 1.125rem;
+  color: var(--plum);
+}
+
+.acard__name {
+  font-family: var(--font-display);
+  font-size: 1.625rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-align: left;
+}
+
+.acard__state {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.625rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.acard__pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--plum);
+  animation: acard-pulse 0.9s ease-in-out infinite;
+}
+
+@keyframes acard-pulse {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.acard--sealed {
+  color: var(--choc);
+  background: var(--blush);
+  border-style: solid;
+  border-color: var(--choc);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---------- manito reveal ---------- */
+
+.manito__title {
+  color: var(--plum);
+}
+
+.manito__card {
+  position: relative;
+  width: min(100%, 520px);
+  min-height: clamp(190px, 30vh, 270px);
+  display: grid;
+  place-items: center;
+  padding: 28px 20px;
+  background: var(--paper);
+  border: 3px solid var(--choc);
+  border-radius: 26px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: background-color 0.6s var(--ease-out);
+}
+
+.manito__card[data-revealed="true"] {
+  background: var(--butter);
+}
+
+.manito__stamp {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 1rem;
+  transform: rotate(8deg);
+}
+
+.manito__face {
+  position: relative;
+  display: grid;
+  place-items: center;
+  gap: 18px;
+}
+
+.manito__name {
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: var(--plum);
+}
+
+.manito__name--blur {
+  filter: blur(12px);
+  opacity: 0.55;
+  user-select: none;
+}
+
+.manito__gold {
+  display: block;
+  width: 110px;
+  height: 6px;
+  background: var(--plum);
+  border-radius: 6px;
+  transform-origin: center;
+}
+
+.manito__ring {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 60px;
+  height: 60px;
+  margin: -30px 0 0 -30px;
+  border: 3px solid var(--plum);
+  border-radius: 50%;
+  opacity: 0;
+  animation: manito-ring 1.6s var(--ease-out) 0.5s 1 both;
+}
+
+@keyframes manito-ring {
+  0% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(9);
+  }
+}
+
+.manito__after {
+  min-height: 118px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.manito__foot {
+  font-family: var(--font-hand);
+  font-size: 1.25rem;
+  color: var(--plum);
+  text-transform: none;
+  letter-spacing: 0.04em;
+}

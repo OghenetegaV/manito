@@ -1,0 +1,297 @@
+/* ---------- shell ---------- */
+
+.shell {
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
+}
+
+.stage {
+  container: stage / inline-size;
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--nav-h) var(--gutter) 0;
+}
+
+.page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 120;
+  padding: 10px 16px;
+  background: var(--butter);
+  color: var(--choc);
+  border: 2.5px solid var(--choc);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transform: translateY(-160%);
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
+/* room for the Game Master's dock on phones and tablets */
+.shell:not([data-gm="none"]) .stage {
+  padding-bottom: calc(132px + env(safe-area-inset-bottom));
+}
+
+.shell[data-gm="small"] .stage {
+  padding-bottom: calc(112px + env(safe-area-inset-bottom));
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .shell:not([data-gm="none"]) .stage {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+}
+
+/* room for her portrait on desktop */
+@media (min-width: 1100px) and (min-height: 640px) {
+  .shell[data-gm="small"] {
+    --gm-w: 240px;
+  }
+  .shell[data-gm="medium"] {
+    --gm-w: 300px;
+  }
+  .shell[data-gm="large"] {
+    --gm-w: 360px;
+  }
+
+  .shell:not([data-gm="none"]) .stage {
+    padding-bottom: 24px;
+    padding-right: calc(var(--gm-w) + var(--gutter) * 2);
+  }
+}
+
+/* ---------- navigation ---------- */
+
+.nav {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 30;
+  height: var(--nav-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-inline: var(--gutter);
+}
+
+.nav__brand {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 4px;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  color: var(--plum);
+}
+
+.nav__star {
+  margin-top: -2px;
+  transform: rotate(14deg);
+}
+
+.nav__links {
+  display: flex;
+  align-items: center;
+  gap: clamp(2px, 1.2vw, 10px);
+}
+
+.nav__status {
+  margin-right: clamp(4px, 1.5vw, 12px);
+  padding: 4px 12px;
+  background: var(--butter);
+  border: 2px solid var(--choc);
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--choc);
+  white-space: nowrap;
+}
+
+.nav__link {
+  min-height: 44px;
+  padding: 0 10px;
+  background: none;
+  border: 0;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--plum);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
+  text-decoration-color: var(--blush);
+  transition: text-decoration-color 0.25s;
+}
+
+.nav__link:hover {
+  text-decoration-color: var(--plum);
+}
+
+@media (max-width: 560px) {
+  .nav__status {
+    display: none;
+  }
+}
+
+/* ---------- ambient ---------- */
+
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: var(--cream);
+  pointer-events: none;
+}
+
+.ambient > * {
+  position: absolute;
+}
+
+.ambient__wash {
+  inset: 0;
+  background:
+    radial-gradient(70% 55% at 8% 0%, var(--powder) 0%, transparent 70%),
+    radial-gradient(60% 50% at 100% 100%, rgba(201, 184, 232, 0.55) 0%, transparent 70%),
+    radial-gradient(50% 40% at 100% 0%, rgba(244, 182, 194, 0.35) 0%, transparent 70%);
+  transition: opacity 1.2s var(--ease), filter 1.2s var(--ease);
+}
+
+.ambient[data-mood="dim"] .ambient__wash {
+  filter: saturate(1.25) brightness(0.96);
+}
+
+/* faint dot grid, like the paper of a sticker book */
+.ambient__dots {
+  inset: 0;
+  background-image: radial-gradient(rgba(74, 24, 61, 0.14) 1.2px, transparent 1.4px);
+  background-size: 26px 26px;
+  mask-image: radial-gradient(90% 80% at 50% 45%, transparent 30%, #000 100%);
+  -webkit-mask-image: radial-gradient(90% 80% at 50% 45%, transparent 30%, #000 100%);
+}
+
+.ambient__doodle {
+  opacity: 0.85;
+}
+
+/* only the first few stickers are kept on phones */
+@media (max-width: 720px) {
+  .ambient__doodle--wide {
+    display: none;
+  }
+
+  .ambient__doodle {
+    opacity: 0.55;
+  }
+}
+
+/* ---------- grain ---------- */
+
+.noise {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.1  0 0 0 0 0.15  0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+}
+
+/* ---------- curtain ---------- */
+
+.curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: radial-gradient(90% 70% at 50% 62%, var(--butter) 0%, var(--blush) 46%, var(--lilac) 100%);
+}
+
+/* ---------- boot / loading / error ---------- */
+
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  background: var(--powder);
+  text-align: center;
+  padding: var(--gutter);
+}
+
+.boot__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.boot__mark {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: 0.24em;
+  padding-left: 0.24em;
+  color: var(--plum);
+}
+
+.loading {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-height: 40vh;
+}
+
+.pulse-line {
+  width: 64px;
+  height: 5px;
+  border-radius: 5px;
+  background: var(--plum);
+  animation: pulse-line 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse-line {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scaleX(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+.error-detail {
+  max-width: 44ch;
+  padding: 10px 14px;
+  border: 2px dashed var(--plum);
+  border-radius: var(--radius-sm);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.75rem;
+  color: var(--text-soft);
+  word-break: break-word;
+}

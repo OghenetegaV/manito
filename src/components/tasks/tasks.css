@@ -1,0 +1,305 @@
+/* ---------- task card ---------- */
+
+.tcard {
+  position: relative;
+  width: min(100%, 600px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: clamp(22px, 3vw, 30px);
+  text-align: left;
+  background: var(--paper);
+  border: 3px solid var(--choc);
+  border-radius: 26px;
+  box-shadow: var(--shadow);
+}
+
+/* a strip of washi tape holding the card down */
+.tcard__tape {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  width: 96px;
+  height: 26px;
+  background: var(--butter);
+  border: 2px solid var(--choc);
+  border-radius: 4px;
+  opacity: 0.95;
+  transform: translateX(-50%) rotate(-3deg);
+  background-image: repeating-linear-gradient(135deg, transparent 0 8px, rgba(36, 23, 27, 0.08) 8px 10px);
+}
+
+.tcard--submitted,
+.tcard--approved {
+  background: var(--powder);
+}
+
+.tcard__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 6px;
+}
+
+.tcard__title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.tcard__emoji {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  background: var(--blush);
+  border: 2.5px solid var(--choc);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  font-size: 1.75rem;
+  line-height: 1;
+  transform: rotate(-6deg);
+}
+
+/* ---------- task write-up ---------- */
+
+.tbody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tbody__p {
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.tbody__quote {
+  padding: 12px 16px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 1.25rem;
+  line-height: 1.32;
+  color: var(--plum);
+  background: var(--powder);
+  border-left: 5px solid var(--blush);
+  border-radius: 4px 14px 14px 4px;
+}
+
+.tbody__aside {
+  text-align: center;
+  font-size: 1.25rem;
+  color: var(--plum);
+}
+
+.tbody__list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.tbody__list ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tbody__list li {
+  position: relative;
+  padding-left: 30px;
+  font-size: 1.0625rem;
+  line-height: 1.45;
+}
+
+.tbody__list li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 3px;
+  width: 18px;
+  height: 18px;
+  background: var(--butter);
+  clip-path: polygon(50% 0, 62% 34%, 98% 38%, 70% 60%, 80% 96%, 50% 76%, 20% 96%, 30% 60%, 2% 38%, 38% 34%);
+}
+
+.tnote {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px 14px;
+  border: 2.5px solid var(--choc);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.tnote__label {
+  font-size: 1.375rem;
+  line-height: 1;
+  color: var(--plum);
+}
+
+.tnote--bonus {
+  background: var(--butter);
+  transform: rotate(-0.6deg);
+}
+
+.tnote--proof {
+  background: var(--lilac);
+  transform: rotate(0.5deg);
+}
+
+.tnote--warn {
+  background: var(--blush);
+  transform: rotate(-0.4deg);
+}
+
+/* ---------- sealed envelope ---------- */
+
+.seal {
+  width: min(100%, 600px);
+  display: grid;
+}
+
+.seal__closed {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 24px 34px;
+  background: var(--blush);
+  border: 3px solid var(--choc);
+  border-radius: 26px;
+  box-shadow: var(--shadow);
+}
+
+.seal__envelope {
+  filter: drop-shadow(4px 4px 0 var(--choc));
+  transform: rotate(-4deg);
+}
+
+.seal__stamp {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: rgba(255, 251, 246, 0.8);
+  transform: rotate(9deg);
+}
+
+.seal__hint {
+  font-size: 1.25rem;
+  color: var(--plum);
+}
+
+.seal__spark {
+  position: absolute;
+}
+
+.seal__spark--a {
+  left: 22px;
+  bottom: 22px;
+}
+
+.seal__spark--b {
+  left: 24px;
+  top: 26px;
+}
+
+/* ---------- mission hub ---------- */
+
+.hub {
+  gap: clamp(22px, 3.6vh, 38px);
+}
+
+.hub__note {
+  font-size: 1.5rem;
+  color: var(--plum);
+  transform: rotate(-1.5deg);
+}
+
+/* ---------- countdown (only shown when the schedule feature is on) ---------- */
+
+.countdown {
+  --num: var(--plum);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.countdown__digits {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: clamp(6px, 2vw, 22px);
+}
+
+.countdown__unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.countdown__num {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(3.75rem, 15vw, 8rem);
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+  color: var(--num);
+  transition: color 2s var(--ease-out);
+}
+
+.countdown__caption {
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.countdown__sep {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 12vw, 6rem);
+  font-weight: 900;
+  line-height: 0.85;
+  color: var(--blush);
+}
+
+.countdown--md .countdown__num {
+  font-size: clamp(2.75rem, 9vw, 4.5rem);
+}
+
+.countdown--md .countdown__sep {
+  font-size: clamp(2.25rem, 7vw, 3.5rem);
+}
+
+.countdown[data-urgency="tense"] {
+  --num: #8a3a5c;
+}
+
+.countdown[data-urgency="critical"] {
+  --num: #a3324f;
+}
+
+.countdown[data-urgency="critical"] .countdown__sep {
+  animation: breathe 3.2s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
