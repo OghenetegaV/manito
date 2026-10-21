@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { FEATURES, PHASE_LABELS } from "@/config/gameConfig";
 import { useGameDispatch, usePublicGame } from "@/game/GameProvider";
+import { isRemoteMode } from "@/lib/remoteMode";
 import { GameProgress } from "./GameProgress";
 import "./game.css";
 
@@ -69,7 +70,11 @@ export function GamePanel({ onClose }: { onClose: () => void }) {
           <p className="eyebrow">Start over</p>
           {confirming ? (
             <>
-              <p className="panel__hint">This wipes the draw and everyone's progress on this device.</p>
+              <p className="panel__hint">
+                {isRemoteMode
+                  ? "This wipes the draw and everyone's progress — for all four phones."
+                  : "This wipes the draw and everyone's progress on this device."}
+              </p>
               <div className="actions" style={{ justifyContent: "flex-start" }}>
                 <Button
                   onClick={() => {

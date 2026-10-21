@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/Button";
 import { useGameDispatch, usePublicGame } from "@/game/GameProvider";
 import { useSimulatedArrivals } from "@/hooks/useSimulatedArrivals";
 import { useTimeScale } from "@/hooks/useTimeline";
+import { isRemoteMode } from "@/lib/remoteMode";
 import { numberWord } from "@/lib/words";
 import { Reveal } from "@/motion/Reveal";
 import { GameStatus } from "./GameStatus";
@@ -19,7 +20,8 @@ export function GameLobby() {
   const me = game.currentUserId;
   const myPresence = me ? game.presence[me] : undefined;
 
-  useSimulatedArrivals(true);
+  // Real players join from their own phones in remote mode; only fake the other three locally.
+  useSimulatedArrivals(!isRemoteMode);
 
   useEffect(() => {
     if (!game.everyoneReady) return;
@@ -70,7 +72,9 @@ export function GameLobby() {
 
       {!me && (
         <p className="lobby__note">
-          Preview mode · once you take a seat, the other {numberWord(game.participants.length - 1)} join on their own.
+          {isRemoteMode
+            ? `Once you take a seat, the other ${numberWord(game.participants.length - 1)} join from their own phones.`
+            : `Preview mode · once you take a seat, the other ${numberWord(game.participants.length - 1)} join on their own.`}
         </p>
       )}
     </section>

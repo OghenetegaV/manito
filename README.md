@@ -4,7 +4,12 @@ A private random-pairing game for four: TIA, LOLA, ORE and OPE. A Game Master (a
 narrates the game. Each girl is secretly assigned a Manito and a secret task from the Secret Task Challenge
 brief, and hands in a photo or video as evidence once it's done.
 
-Frontend only: React 19, TypeScript, Vite, Framer Motion. No backend yet.
+React 19, TypeScript, Vite, Framer Motion. Runs two ways:
+
+- **Local/demo mode** (default, no setup): one browser, one device, the other players simulated.
+- **Real multiplayer** (optional): up to four phones share one live game over Supabase — see
+  [supabase/README.md](supabase/README.md) to turn it on. The app detects which mode it's in automatically;
+  nothing else changes.
 
 ```bash
 npm install
@@ -53,9 +58,15 @@ paws, bows, cherries, envelopes — are scattered across the background and used
 | --- | --- |
 | `src/config/gameConfig.ts` | Participants, `FEATURES`, Game Master lines, the six tasks, rules copy, consequences |
 | `src/game/machine.ts` | The phase state machine; `createGameReducer(features)` builds a reducer for a given feature set |
-| `src/game/assignments.ts` | `generateAssignments()` — a seedable derangement, tested independently |
+| `src/game/assignments.ts` | `generateAssignments()` — a seedable derangement, tested independently (also reimplemented in SQL — see `begin_draw()` in `supabase/schema.sql`) |
 | `src/game/mediaUtils.ts` | Turns an uploaded file into `ProofMedia` (downsized photo, or an in-memory video) |
-| `src/game/selectors.ts` | `selectPublic` / `selectPrivate` / `selectRevealed`: the only way UI reads the game |
+| `src/game/selectors.ts` | `selectPublic` / `selectPrivate` / `selectRevealed`: the only way UI reads the game, in either mode |
+| `src/game/gameContext.ts` | The hooks every component actually calls (`usePublicGame` etc.) — mode-agnostic |
+| `src/game/GameProvider.tsx` | Picks local or remote; the only file that knows which mode is running |
+| `src/game/LocalGameProvider.tsx` | Today's local/demo implementation: a reducer + `localStorage` |
+| `src/game/RemoteGameProvider.tsx` | The Supabase-backed implementation — see below |
+| `src/game/remote/queries.ts` | The write side of remote mode: one guarded Supabase call per action |
+| `src/lib/remoteMode.ts` / `src/lib/supabaseClient.ts` | Mode detection (dependency-free) / the actual client (code-split, never bundled for local-mode users) |
 | `src/phaseViews.tsx` | One scene per phase; the shell looks the phase up rather than branching on it |
 | `src/components/*` | layout, welcome, game, gamemaster, decor, assignment, tasks, proof, reveal, punishment, ui |
 | `src/services/audio.ts` | Optional sound layer, silent unless sources are registered |
@@ -75,17 +86,36 @@ Components never get raw game state. They read one of three gated views:
 - **revealed**: everyone's pairings, `null` until the midnight phase
 
 During the draw the UI only shows "sealed" slots, never who drew whom, and the task text is not in the DOM
-until the player breaks the seal. Tests in `src/game/machine.test.ts` cover this.
+until the player breaks the seal. In local mode this is enforced by what the UI chooses to render; in remote
+mode it's additionally enforced by the database itself (Row Level Security — see below), so it holds even
+against someone poking at their own network tab. Tests in `src/game/machine.test.ts` cover both.
 
-## Before this is a real multiplayer game
+## Real multiplayer (Supabase)
 
-Everything private currently lives in the browser (`localStorage`), and that is the honest limit of a
-frontend-only build: anyone with dev tools on the device can read the draw. Videos in particular are only
-held as an in-memory blob URL and do not survive a refresh — a backend is what actually stores them. To make
-it real:
+Turning this on (see [supabase/README.md](supabase/README.md) for the setup steps) is what makes "how does
+each person join from their own phone" actually true: four phones, one shared lobby, live presence, and a
+draw that happens exactly once, server-side, so two phones tapping "Find our Manitos" at the same instant
+can never produce two different pairings.
 
-1. Move `assignments`, `tasks`, `punishments` and submissions server-side; serve `selectPrivate` /
-   `selectRevealed` shapes per authenticated player.
-2. Replace `useSimulatedArrivals` (the other players "join" on their own in preview) with real presence.
-3. Replace `simulatedSubmissions` with real submissions.
-4. Store evidence (photo/video) in object storage rather than as a data URL or blob URL.
+The shape of it:
+
+- `GameProvider` renders `LocalGameProvider` or `RemoteGameProvider` depending on whether
+  `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` are set — see `src/lib/remoteMode.ts`. Every component calls
+  the exact same hooks (`usePublicGame`, `usePrivateGame`, `useRevealedGame`, `useGameDispatch`) either way,
+  and never needs to know which mode is active.
+- Each phone gets a private, stable identity via Supabase Anonymous Auth — no login screen, no password.
+  Claiming a seat (tapping a name) links that identity to a participant row; refreshing the page keeps the
+  same seat.
+- Lobby presence, the draw's result, each player's own task, and each player's own evidence are all synced
+  live (Postgres Realtime). What's actually shared vs. personal: joining/readying/the draw are a genuinely
+  shared moment across all four phones; reading your task and submitting evidence afterward is personal
+  screen-navigation on each phone and never blocks on where anyone else is.
+- Row Level Security (`supabase/schema.sql`) is what actually keeps a task/manito/proof private to its owner
+  — a player's own device can only ever `SELECT` its own rows for those tables, until the reveal phase makes
+  them world-readable (matching the house rule that everyone shows their task and proof at the end).
+- The draw itself runs as a Postgres function (`begin_draw`), inside one transaction, so it's atomic: the
+  second of two simultaneous callers just sees the lobby is no longer `'ready'` and no-ops.
+
+What it deliberately doesn't add: no file storage for evidence (photos are still downsized into the database
+row as before; videos still don't sync between devices or survive a refresh, exactly like local mode), and
+no real accounts — see `supabase/README.md`'s "What this does not add" section for the full, honest list.

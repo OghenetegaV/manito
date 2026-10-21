@@ -15,15 +15,17 @@ export default function App() {
       {/* honours prefers-reduced-motion: transforms/layout animations are skipped, opacity is kept */}
       <MotionConfig reducedMotion="user">
         {ready && (
-          <GameProvider>
-            <ToastProvider>
+          // ToastProvider wraps GameProvider: the remote provider surfaces things like
+          // "someone just took that seat" through the same toast the rest of the app uses.
+          <ToastProvider>
+            <GameProvider>
               <NarrationProvider>
                 <CurtainProvider>
                   <AppShell />
                 </CurtainProvider>
               </NarrationProvider>
-            </ToastProvider>
-          </GameProvider>
+            </GameProvider>
+          </ToastProvider>
         )}
         <Boot visible={!ready} />
       </MotionConfig>
