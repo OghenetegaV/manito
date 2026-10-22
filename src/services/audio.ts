@@ -92,46 +92,39 @@ function playNoiseBurst(ctx: AudioContext, dest: AudioNode, startTime: number, d
 }
 
 /* ------------------------------------------------------------------ */
-/* The theme — a slow, soft, looping lullaby                           */
-/* ------------------------------------------------------------------ */
-
-const A3 = 220.0,
-  C4 = 261.63,
-  D4 = 293.66,
-  E4 = 329.63,
-  G4 = 392.0,
-  A4 = 440.0;
-
-/** [chord (one or two notes), note duration, time until the next note starts]. Low register,
- * slow and legato on purpose — a soft background hum, not something that fights for attention. */
-const THEME: [number[], number, number][] = [
-  [[A3, E4], 1.1, 1.35],
-  [[C4], 0.85, 1.05],
-  [[E4], 0.85, 1.05],
-  [[D4], 0.85, 1.05],
-  [[A3, C4], 1.15, 1.4],
-  [[G4], 0.85, 1.05],
-  [[E4], 0.85, 1.05],
-  [[D4], 1.25, 1.6],
-  [[A3, E4], 1.1, 1.35],
-  [[D4], 0.85, 1.05],
-  [[E4], 0.85, 1.05],
-  [[G4], 0.85, 1.05],
-  [[A4], 1.0, 1.3],
-  [[G4], 0.85, 1.05],
-  [[E4], 0.85, 1.05],
-  [[C4], 1.3, 1.8],
-];
-
-/* ------------------------------------------------------------------ */
-/* Interactive sound effects                                           */
+/* The theme — a music box: twinkly, sparse, with real pauses          */
 /* ------------------------------------------------------------------ */
 
 const C5 = 523.25,
   D5 = 587.33,
   E5 = 659.25,
   G5 = 783.99,
-  A5 = 880.0;
+  A5 = 880.0,
+  C6 = 1046.5;
+
+/** [note (0 = rest), duration, time until the next note starts]. Sparse on purpose — real gaps
+ * between phrases, like a wind-up box running down, not a continuous hum. */
+const THEME: [number[], number, number][] = [
+  [[C5], 0.3, 0.55],
+  [[E5], 0.3, 0.55],
+  [[G5], 0.3, 0.55],
+  [[0], 0, 0.35],
+  [[D5], 0.3, 0.55],
+  [[G5], 0.3, 0.55],
+  [[C6], 0.4, 0.7],
+  [[0], 0, 0.55],
+  [[A5], 0.3, 0.55],
+  [[G5], 0.3, 0.55],
+  [[E5], 0.3, 0.55],
+  [[0], 0, 0.35],
+  [[D5], 0.3, 0.55],
+  [[C5], 0.4, 0.85],
+  [[0], 0, 0.75],
+];
+
+/* ------------------------------------------------------------------ */
+/* Interactive sound effects                                           */
+/* ------------------------------------------------------------------ */
 
 const PATCHES: Record<SfxName, (ctx: AudioContext, dest: AudioNode) => void> = {
   click: (ctx, dest) => playNote(ctx, dest, 720, ctx.currentTime, 0.05, "sine", 0.22),
@@ -347,14 +340,15 @@ class AudioEngine {
     this.scheduleTheme();
   }
 
-  /** A small look-ahead scheduler: queues whatever chords fall in the next 1.5s, then checks
+  /** A small look-ahead scheduler: queues whatever notes fall in the next 1.5s, then checks
    * back — far steadier than one setTimeout per note, which drifts under tab throttling. */
   private scheduleTheme = () => {
     if (!this.ctx || !this.themeGain) return;
     while (this.nextNoteTime < this.ctx.currentTime + 1.5) {
       const [freqs, duration, gap] = THEME[this.noteIndex % THEME.length];
-      const peak = freqs.length > 1 ? 0.15 : 0.22;
-      for (const f of freqs) playPad(this.ctx, this.themeGain, f, this.nextNoteTime, duration, peak);
+      for (const f of freqs) {
+        if (f > 0) playNote(this.ctx, this.themeGain, f, this.nextNoteTime, duration, "triangle", 0.32);
+      }
       this.nextNoteTime += gap;
       this.noteIndex++;
     }
