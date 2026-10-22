@@ -6,6 +6,7 @@ import { useTimeScale } from "@/hooks/useTimeline";
 import { isRemoteMode } from "@/lib/remoteMode";
 import { numberWord } from "@/lib/words";
 import { Reveal } from "@/motion/Reveal";
+import { audio } from "@/services/audio";
 import { GameStatus } from "./GameStatus";
 import { ParticipantGrid } from "./ParticipantGrid";
 import "./game.css";
@@ -42,7 +43,10 @@ export function GameLobby() {
         participants={game.participants}
         presence={game.presence}
         currentUserId={me}
-        onSelect={(id) => dispatch({ type: "JOIN", id, self: true })}
+        onSelect={(id) => {
+          audio.play("seat_claim");
+          dispatch({ type: "JOIN", id, self: true });
+        }}
       />
 
       <GameStatus />
@@ -56,7 +60,14 @@ export function GameLobby() {
               <Button variant="quiet" onClick={() => dispatch({ type: "LEAVE" })}>
                 Not me
               </Button>
-              <Button size="lg" arrow onClick={() => dispatch({ type: "SET_READY", id: me })}>
+              <Button
+                size="lg"
+                arrow
+                onClick={() => {
+                  audio.play("ready_ding");
+                  dispatch({ type: "SET_READY", id: me });
+                }}
+              >
                 I'm ready
               </Button>
             </div>

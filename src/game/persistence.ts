@@ -26,10 +26,12 @@ export function loadState(): GameState {
 export function saveState(state: GameState): void {
   try {
     // A video's blob URL dies with the page, so don't store a dead link (its name and size are kept).
-    const proof = state.proof;
-    const storable: GameState =
-      proof?.media.kind === "video" ? { ...state, proof: { ...proof, media: { ...proof.media, url: undefined } } } : state;
-    window.localStorage.setItem(GAME_CONFIG.storageKey, JSON.stringify(storable));
+    const proofs = Object.fromEntries(
+      Object.entries(state.proofs).map(([id, proof]) =>
+        proof.media.kind === "video" ? [id, { ...proof, media: { ...proof.media, url: undefined } }] : [id, proof],
+      ),
+    );
+    window.localStorage.setItem(GAME_CONFIG.storageKey, JSON.stringify({ ...state, proofs }));
   } catch {
     // Storage full or unavailable (private mode): the game still works, it just won't survive a refresh.
   }

@@ -6,6 +6,7 @@ import { useNarrationValue } from "@/components/gamemaster/narration";
 import { resolveGameMaster } from "@/components/gamemaster/layout";
 import { GamePanel } from "@/components/game/GamePanel";
 import { Rules } from "@/components/game/Rules";
+import { SoundCheck } from "@/components/welcome/SoundCheck";
 import { Drawer } from "@/components/ui/Drawer";
 import { Modal } from "@/components/ui/Modal";
 import { PHASE_VIEWS } from "@/phaseViews";
@@ -31,6 +32,7 @@ export function AppShell() {
   const { transitioning } = useCurtain();
   const [rulesOpen, setRulesOpen] = useState(false);
   const [gameOpen, setGameOpen] = useState(false);
+  const [soundChecked, setSoundChecked] = useState(false);
 
   useDeadlineWatcher();
   useAudioCues();
@@ -38,7 +40,7 @@ export function AppShell() {
   const gm = resolveGameMaster(game.phase, {
     narration,
     everyoneReady: game.everyoneReady,
-    hasEvidence: !!secret?.proof,
+    hasEvidence: !!secret?.allSubmitted,
   });
 
   // Keep her last props around so she can leave gracefully instead of vanishing.
@@ -50,6 +52,7 @@ export function AppShell() {
 
   const mood: Mood = transitioning || game.phase === "assignment" ? "dim" : "warm";
   const View = PHASE_VIEWS[game.phase];
+  const showSoundCheck = game.phase === "welcome" && !soundChecked;
 
   return (
     <div className="shell" data-phase={game.phase} data-gm={gm?.size ?? "none"}>
@@ -61,9 +64,9 @@ export function AppShell() {
       <Navigation onOpenRules={() => setRulesOpen(true)} onOpenGame={() => setGameOpen(true)} />
 
       <main id="main" className="stage">
-        <PageTransition phaseKey={game.phase}>
+        <PageTransition phaseKey={showSoundCheck ? "soundcheck" : game.phase}>
           <Suspense fallback={<Loading message="The Game Master is getting things ready." />}>
-            <View />
+            {showSoundCheck ? <SoundCheck onContinue={() => setSoundChecked(true)} /> : <View />}
           </Suspense>
         </PageTransition>
       </main>

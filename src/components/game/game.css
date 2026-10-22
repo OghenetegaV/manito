@@ -336,9 +336,19 @@ button.pcard:hover {
   position: relative;
   padding-left: 46px;
   min-height: 34px;
-  font-size: 1rem;
-  line-height: 1.45;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--text-soft);
   counter-increment: rule;
+}
+
+.rules__step-title {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.125rem;
+  line-height: 1.3;
+  color: var(--choc);
 }
 
 .rules__steps li::before {

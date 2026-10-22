@@ -12,7 +12,7 @@ export function DeadlineScreen() {
   const secret = usePrivateGame();
   const dispatch = useGameDispatch();
   const step = useTimeline(BEATS);
-  const submitted = !!secret?.proof;
+  const submitted = !!secret?.allSubmitted;
 
   return (
     <section className="scene deadline" aria-labelledby="deadline-title">

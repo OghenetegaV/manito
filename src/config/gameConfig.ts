@@ -22,7 +22,7 @@ export const PARTICIPANTS: Participant[] = [
  * Parts of the game that are built but switched off for now.
  *  - schedule:      the mission deadline, countdown clock and the timed midnight reveal
  *  - consequences:  the "task failed" and punishment scenes that follow the reveal
- * With both off the game is: draw → secret task → upload evidence.
+ * With both off the game is: draw → secret missions → upload evidence.
  */
 export const FEATURES = {
   schedule: false,
@@ -88,8 +88,8 @@ export const PHASE_LABELS: Record<GamePhase, string> = {
   ready: "All present",
   assignment: "The draw",
   "manito-reveal": "Your Manito",
-  task: "Secret task",
-  countdown: "Your task",
+  task: "Secret missions",
+  countdown: "Your missions",
   proof: "Evidence",
   deadline: "Time's up",
   midnight: "Midnight reveal",
@@ -102,7 +102,7 @@ export const PHASE_LABELS: Record<GamePhase, string> = {
 export const PROGRESS_STEPS: { label: string; phases: GamePhase[]; feature?: keyof Features }[] = [
   { label: "Lobby", phases: ["lobby", "ready"] },
   { label: "Draw", phases: ["assignment", "manito-reveal"] },
-  { label: "Task", phases: ["task", "countdown"] },
+  { label: "Missions", phases: ["task", "countdown"] },
   { label: "Evidence", phases: ["proof"] },
   { label: "Deadline", phases: ["deadline"], feature: "schedule" },
   { label: "Midnight", phases: ["midnight"], feature: "schedule" },
@@ -110,157 +110,330 @@ export const PROGRESS_STEPS: { label: string; phases: GamePhase[]; feature?: key
   { label: "Wrap", phases: ["complete"], feature: "schedule" },
 ];
 
-export const TASKS: Task[] = [
+/** One dare, assigned 1:1 — exactly one per participant. Video evidence. */
+export const DARES: Task[] = [
   {
-    id: "dance",
+    id: "dare",
+    kind: "dare",
     emoji: "💃🏽",
-    title: "The Main Character Dance",
+    title: "The Unexpected Dance Break",
     blocks: [
       {
         kind: "p",
-        text: "At some point during the trip, suddenly start dancing in public as if your favourite song has just started playing.",
+        text: "At an appropriate moment during the outing, randomly break into a 20-second dance in a public area. Dance with full confidence, as though your favourite song has just come on, even if there is no music.",
       },
-      {
-        kind: "list",
-        title: "You must",
-        items: [
-          "Dance for at least 30 seconds.",
-          "Act completely serious and confident.",
-          "Get at least one of the girls to join you without directly asking her to dance.",
-          "Do NOT explain why you're dancing.",
-        ],
-      },
+      { kind: "p", text: "Your mission is to act as though this is completely normal." },
     ],
-    proof: "Get a video of the moment.",
-    warning: "If anyone correctly guesses your task before you complete it, you FAIL.",
+    proofRequired: "video",
+    proof: "A video of the performance.",
   },
   {
-    id: "single",
-    emoji: "👀",
-    title: "The Innocent Question",
-    blocks: [
-      { kind: "p", text: "Approach an appropriate adult stranger and confidently ask:" },
-      { kind: "quote", text: "“Excuse me, sorry to bother you, but are you single?”" },
-      {
-        kind: "p",
-        text: "Whatever their answer, respond calmly and naturally, then walk away like you asked the most normal question in the world.",
-      },
-    ],
-    bonus: "Do it without laughing or breaking character.",
-    proof:
-      "Your friends should capture the moment from a respectful distance. Don't record the stranger's face without permission.",
-    warning: "If they're uncomfortable or uninterested, leave them alone immediately.",
-  },
-  {
-    id: "influencer",
-    emoji: "🎥",
-    title: "Lifestyle Influencer",
-    blocks: [
-      { kind: "p", text: "For 5 minutes, become a full-blown lifestyle influencer in public." },
-      {
-        kind: "list",
-        title: "You must",
-        items: [
-          "Give a dramatic introduction to your “followers”.",
-          "Review at least 3 random things around you.",
-          "Say “Guys, you NEED to…” at least once.",
-          "Pretend you're being sponsored.",
-          "Act like you're genuinely filming content for millions of followers.",
-        ],
-      },
-    ],
-    bonus: "Convince at least one stranger that you're actually an influencer.",
-    proof: "Get a video of your performance.",
-    warning: "Do NOT reveal that you're doing a secret task.",
-  },
-  {
-    id: "entrance",
+    id: "dare",
+    kind: "dare",
     emoji: "👠",
-    title: "The Celebrity Entrance",
-    blocks: [
-      { kind: "p", text: "At a suitable public location, make a 60-second celebrity entrance." },
-      { kind: "p", text: "Walk like you're arriving at the biggest event of your life." },
-      {
-        kind: "list",
-        title: "You must",
-        items: [
-          "Walk dramatically and confidently.",
-          "Wave at imaginary fans.",
-          "Fix your hair/clothes like paparazzi are watching.",
-          "Give at least one mysterious smile.",
-          "Stay completely in character.",
-        ],
-      },
-    ],
-    bonus:
-      "Get the girls to act as your paparazzi and shout things like “Over here!”, “One more picture!” and “Who are you wearing?”",
-    proof: "Someone must record your entire entrance.",
-    warning: "No laughing. You are FAMOUS.",
-  },
-  {
-    id: "phone-call",
-    emoji: "📞",
-    title: "The Dramatic Phone Call",
+    title: "The Main Character Catwalk",
     blocks: [
       {
         kind: "p",
-        text: "Make a fake phone call in front of everyone that sounds extremely serious and dramatic. Keep the conversation going for at least 60 seconds.",
+        text: "Strut confidently through an appropriate public space as though you are walking the runway at Fashion Week. Give the imaginary photographers your best poses and finish with a dramatic final walk.",
+      },
+    ],
+    proofRequired: "video",
+    proof: "A video of your catwalk.",
+    warning: "Do not obstruct people or disrupt the venue.",
+  },
+  {
+    id: "dare",
+    kind: "dare",
+    emoji: "🎥",
+    title: "The Influencer Nobody Asked For",
+    blocks: [
+      {
+        kind: "p",
+        text: "Become a lifestyle influencer for at least 60 seconds. Film yourself narrating your experience at the outing, enthusiastically describing the venue, your activities and the general atmosphere.",
+      },
+      { kind: "p", text: "You must sound as though thousands of people are eagerly waiting for your update." },
+    ],
+    proofRequired: "video",
+    proof: "A video of your vlog.",
+    warning: "Do not record strangers without their permission.",
+  },
+  {
+    id: "dare",
+    kind: "dare",
+    emoji: "🍽️",
+    title: "The Unnecessary Food Critic",
+    blocks: [
+      {
+        kind: "p",
+        text: "Give a dramatic, professional food review of the dishes at your table. Discuss the presentation, aroma, texture and overall experience as though you are judging a restaurant for a prestigious food award.",
+      },
+      { kind: "p", text: "Deliver your review with a straight face." },
+    ],
+    proofRequired: "video",
+    proof: "A video of your review.",
+    warning: "Keep your feedback about the food honest and your interactions with the restaurant staff polite.",
+  },
+  {
+    id: "dare",
+    kind: "dare",
+    emoji: "🥹",
+    title: "The Emotional Friendship Speech",
+    blocks: [
+      { kind: "p", text: "At a suitable moment during an event, spontaneously deliver an emotional speech about friendship." },
+      {
+        kind: "p",
+        text: "Thank your friends for their love, loyalty and support as though you are receiving a lifetime achievement award. You may even get a little dramatic.",
+      },
+      { kind: "p", text: "Your mission is to make the speech sound completely spontaneous." },
+    ],
+    proofRequired: "video",
+    proof: "A video of your speech.",
+  },
+];
+
+/**
+ * The same brief for everyone — the `{{manito}}` token is filled in with the real name once
+ * the player's own Manito is known (see game/missionTemplate.ts). One of the two picture
+ * challenges every participant gets.
+ */
+export const MANITO_PHOTO_BRIEF: Task = {
+  id: "manito-photo",
+  kind: "manito-photo",
+  emoji: "📸",
+  title: "The Manito Shot",
+  blocks: [
+    {
+      kind: "p",
+      text: "One of your two picture challenges is about her: {{manito}}.",
+    },
+    {
+      kind: "p",
+      text: "Capture a photo of {{manito}} at some point during the outing — candid, natural, like you weren't even trying. A genuine moment, not a posed one.",
+    },
+  ],
+  proofRequired: "photo",
+  proof: "A photo of {{manito}}, taken without her realising it's for your mission.",
+  warning: "She should have no idea it's happening. This one's just for you.",
+};
+
+/** The other picture challenge, assigned 1:1 from this catalog — about the group and the outing. */
+export const GROUP_PHOTO_CHALLENGES: Task[] = [
+  {
+    id: "group-photo",
+    kind: "group-photo",
+    emoji: "😭",
+    title: "The Picture Before Everything Went Wrong",
+    blocks: [
+      {
+        kind: "p",
+        text: "Take a picture of the group early in the outing, preferably when everyone is still looking fresh, composed and excited. The idea is to preserve the before picture.",
       },
       {
         kind: "p",
-        text: "Make everyone think something serious is happening. Then reveal that you're actually talking about something completely ordinary.",
+        text: "If possible, take another group picture towards the end of the outing to document how everyone looks after hours of activities.",
       },
-      { kind: "p", text: "Example:" },
-      { kind: "quote", text: "“Listen, I've made my decision. There's nothing you can say to change my mind…”" },
-      { kind: "aside", text: "dramatic pause" },
-      { kind: "quote", text: "“…I'm getting the vanilla ice cream.”" },
+      { kind: "aside", text: "the goal: a before-and-after memory of the same day" },
     ],
-    bonus: "End with “We'll discuss this properly when I see you.” Then calmly put your phone away.",
-    proof: "Your friends must capture the performance without exposing you.",
+    proofRequired: "photo",
+    proof: "A group photo early on — and ideally a second one later, for the before-and-after.",
   },
   {
-    id: "toast",
-    emoji: "🥂",
-    title: "The Toast",
+    id: "group-photo",
+    kind: "group-photo",
+    emoji: "😂",
+    title: "The Person Who Made Us Laugh",
     blocks: [
-      { kind: "p", text: "During dinner or drinks, suddenly stand up and announce:" },
-      { kind: "quote", text: "“Ladies, I'd like to make a toast.”" },
-      { kind: "p", text: "Give a 60-second, unnecessarily emotional speech about your friendship." },
+      { kind: "p", text: "Capture a moment when one person in the group makes everyone laugh." },
       {
-        kind: "list",
-        title: "You must include",
-        items: [
-          "One dramatic pause.",
-          "One ridiculously specific memory.",
-          "A heartfelt compliment.",
-          "A completely unexpected ending.",
-        ],
+        kind: "p",
+        text: "Don't ask everyone to look at the camera. Photograph the reactions, the person telling the story and the people struggling to keep a straight face.",
       },
-      { kind: "p", text: "Example ending:" },
-      { kind: "quote", text: "“To all the late nights, questionable decisions and unnecessary arguments…”" },
-      { kind: "aside", text: "pause" },
-      { kind: "quote", text: "“…and most importantly, to finally agreeing on where to eat. To us!” 🥂" },
+      { kind: "aside", text: "the goal: preserve the joke, the reactions and the person responsible" },
     ],
-    bonus: "Get someone outside the group to raise their glass with you.",
-    proof: "Record the speech without making it obvious you're completing a task.",
+    proofRequired: "photo",
+    proof: "A candid photo of the laugh in progress — reactions, not posed smiles.",
+  },
+  {
+    id: "group-photo",
+    kind: "group-photo",
+    emoji: "👜",
+    title: "The Unofficial Group Mother",
+    blocks: [
+      {
+        kind: "p",
+        text: "Take a picture of the person who spends the outing checking on everyone, organising the group, reminding people about their belongings or making sure nobody is left behind.",
+      },
+      { kind: "p", text: "Capture her actually doing it rather than asking her to pose." },
+      { kind: "aside", text: "the goal: document the little roles everyone naturally takes on" },
+    ],
+    proofRequired: "photo",
+    proof: "A candid photo of her mid-mothering — caught in the act, not posed.",
+  },
+  {
+    id: "group-photo",
+    kind: "group-photo",
+    emoji: "🍽️",
+    title: "The Table Tells a Story",
+    blocks: [
+      { kind: "p", text: "Take a picture of the table during the outing." },
+      {
+        kind: "p",
+        text: "Capture the food, drinks, scattered bags, half-finished meals, receipts or whatever else tells the story of what happened there. It doesn't have to be aesthetically perfect.",
+      },
+      { kind: "aside", text: "the goal: preserve the little details that might otherwise be forgotten" },
+    ],
+    proofRequired: "photo",
+    proof: "A photo of the table, exactly as it actually looked.",
+  },
+  {
+    id: "group-photo",
+    kind: "group-photo",
+    emoji: "📱",
+    title: "The Group Chat in Real Life",
+    blocks: [
+      {
+        kind: "p",
+        text: "Capture a moment when at least three people are engaged in different conversations, laughing, showing one another something on their phones or reacting to a story.",
+      },
+      { kind: "p", text: "The picture should feel like your group chat has come to life." },
+      { kind: "aside", text: "the goal: a photograph of your actual friendship dynamic" },
+    ],
+    proofRequired: "photo",
+    proof: "A photo of at least three people mid-conversation, unposed.",
+  },
+  {
+    id: "group-photo",
+    kind: "group-photo",
+    emoji: "😭",
+    title: "The Unflattering but Unforgettable Picture",
+    blocks: [
+      {
+        kind: "p",
+        text: "Take a funny picture of yourself or a willing friend at an unexpected moment — someone caught mid-sentence, making a ridiculous face, dancing dramatically or reacting to something shocking.",
+      },
+      { kind: "p", text: "The picture should be funny without deliberately humiliating anyone." },
+      {
+        kind: "aside",
+        text: "the goal: one picture nobody would choose as their profile photo but everyone loves anyway",
+      },
+    ],
+    proofRequired: "photo",
+    proof: "One deeply unserious, completely unposed photo.",
+  },
+  {
+    id: "group-photo",
+    kind: "group-photo",
+    emoji: "❤️",
+    title: "The Five of Us",
+    blocks: [
+      { kind: "p", text: "Get all five members of the group into one picture." },
+      {
+        kind: "p",
+        text: "It can be a selfie, a picture taken by a stranger who agrees to help, or a photograph using a phone timer. The important thing is that nobody is missing.",
+      },
+      { kind: "aside", text: "the goal: proof all five of you were there for this memory" },
+    ],
+    proofRequired: "photo",
+    proof: "One photo with all five of you in it — nobody missing.",
+  },
+  {
+    id: "group-photo",
+    kind: "group-photo",
+    emoji: "🥹",
+    title: "The Moment Nobody Noticed",
+    blocks: [
+      { kind: "p", text: "Capture a quiet, ordinary moment between two or more people in the group." },
+      {
+        kind: "p",
+        text: "It could be someone resting their head on another person's shoulder, sharing food, fixing someone's hair or having a conversation while everyone else is occupied.",
+      },
+      { kind: "aside", text: "the goal: preserve the softer side of the friendship, not just the loud moments" },
+    ],
+    proofRequired: "photo",
+    proof: "A quiet, candid photo — nobody posing for it.",
+  },
+  {
+    id: "group-photo",
+    kind: "group-photo",
+    emoji: "🌙",
+    title: "The Last Picture Before We Leave",
+    blocks: [
+      { kind: "p", text: "Before the outing ends, capture one final picture of the group." },
+      { kind: "p", text: "Everyone can be tired, happy, sleepy or completely unserious. Don't worry about making it perfect." },
+      { kind: "aside", text: "the goal: a closing photograph that marks the end of this hangout" },
+    ],
+    proofRequired: "photo",
+    proof: "One final group photo, taken right before everyone leaves.",
+  },
+  {
+    id: "group-photo",
+    kind: "group-photo",
+    emoji: "🤣",
+    title: "The Picture That Needs an Explanation",
+    blocks: [
+      {
+        kind: "p",
+        text: "Take a picture of something that happens during the outing that would make absolutely no sense to someone who wasn't there — an unusual pose, an unexpected situation, a ridiculous object or a moment that becomes an inside joke.",
+      },
+      { kind: "p", text: "Give the picture a short caption explaining what happened." },
+      { kind: "aside", text: "the goal: a memory that belongs specifically to the five of you" },
+    ],
+    proofRequired: "photo",
+    proof: "A photo plus a short caption explaining what on earth happened.",
   },
 ];
 
 /** The house rules, shown in the Rules sheet. */
 export const RULES = {
-  title: "Secret Task Challenge",
-  intro: "Each person will secretly receive a task to complete during the trip. Nobody should know what task you have.",
+  title: "The Manito Game",
+  tagline: "Five girls. Secret missions. Unforgettable memories.",
   steps: [
-    "Keep your task completely secret.",
-    "Complete it naturally during the trip without telling anyone you're doing a challenge.",
-    "Your task must be done in public where appropriate.",
-    "Take a photo/video as proof without ruining the moment.",
-    "If someone correctly guesses your task before you complete it, you lose the task.",
-    "Once completed, keep quiet until the Final Reveal.",
-    "At the end of the trip, everyone reveals their task and shows their proof.",
+    {
+      title: "Your Mission Is Secret",
+      body: "Your assigned dare and picture challenges are exclusively yours. Nobody else in the group should know what you have been assigned. Keep your missions private until the official reveal.",
+    },
+    {
+      title: "Complete Your Dare",
+      body: "You must complete your assigned dare during one of our hangouts or events. Be creative, commit to the assignment and, most importantly, have fun with it!",
+    },
+    {
+      title: "Get Your Dare on Video",
+      body: "Every dare must be recorded as proof of completion. You may discreetly ask one person in the group to help you record it, but you must not reveal the purpose of the recording or disclose your mission.",
+    },
+    {
+      title: "Complete Your Two Picture Challenges",
+      body: "You will receive two picture challenges: one involving your Manito and another involving the group, a friend or a memorable moment from the outing. Capture both without revealing your assignments.",
+    },
+    {
+      title: "Keep It Natural",
+      body: "Do not make it obvious that you are completing a mission. Your dare and pictures should look like spontaneous moments from the hangout. The less suspicious you appear, the better!",
+    },
+    {
+      title: "No Exposing Anyone",
+      body: "Do not reveal your dare, picture challenges or Manito before the official reveal. Avoid giving suspicious hints or trying to make other people guess your assignment.",
+    },
+    {
+      title: "No Evidence, No Completion",
+      body: "Your dare must have video evidence, while both picture challenges must have photographic evidence. Submit your evidence as instructed before the reveal.",
+    },
+    {
+      title: "Be Bold, but Be Sensible",
+      body: "The objective is to create funny and memorable moments, not to put anyone in danger or make anyone genuinely uncomfortable. No dangerous stunts, harassment, unwanted touching, property damage or disrespect towards strangers, staff or members of the public. You may request an alternative if a mission makes you genuinely uncomfortable.",
+    },
+    {
+      title: "Respect Everyone's Privacy",
+      body: "All videos and pictures collected during the game are intended to preserve memories of our hangouts and celebrate the experiences we share — for our private group entertainment and memories. Nobody should post or share another person's embarrassing moments publicly without their permission.",
+    },
+    {
+      title: "The Reveal Is the Best Part!",
+      body: "All missions and their evidence will be revealed at the agreed time. We will watch the videos, view the pictures, guess who assigned each dare and finally reveal our Manitos.",
+    },
   ],
-  bonus: "The person who completes their task most convincingly gets an extra point.",
-  golden: "Have fun, don't force strangers to participate, and respect anyone who isn't interested.",
+  golden: {
+    title: "Have Fun!",
+    body: "This is about friendship, laughter and creating memories together. Do not take the game too seriously, but do make an effort to complete your assignments.",
+  },
 } as const;
 
 /** Only used when `FEATURES.consequences` is on. */
@@ -294,7 +467,6 @@ export const PUNISHMENTS: Punishment[] = [
     title: "The Newsreader",
     description:
       "Announce the next thing the group discusses as if reading breaking news. Full anchor voice.",
-    durationMs: 48 * HOUR,
   },
 ];
 
@@ -302,14 +474,16 @@ export const GAME_CONFIG = {
   participants: PARTICIPANTS,
   features: FEATURES,
   gameMasterMessages: GAME_MASTER_MESSAGES,
-  /** Only used when `FEATURES.schedule` is on: how long girls have once their task is revealed. */
+  /** Only used when `FEATURES.schedule` is on: how long girls have once their missions are revealed. */
   taskDurationMs: 24 * HOUR,
-  /** Chance that a simulated player (preview only) hands in evidence. */
+  /** Chance that a simulated player (preview only) hands in all their evidence. */
   simulatedSubmitRate: 0.7,
   /** Countdown intensity thresholds (remaining time). Only used with `FEATURES.schedule`. */
   urgency: { tenseBelowMs: 2 * HOUR, criticalBelowMs: 15 * MINUTE },
-  tasks: TASKS,
+  dares: DARES,
+  manitoPhotoBrief: MANITO_PHOTO_BRIEF,
+  groupPhotoChallenges: GROUP_PHOTO_CHALLENGES,
   punishments: PUNISHMENTS,
-  storageKey: "manito:v2",
+  storageKey: "manito:v3",
   gameMasterManifest: "/gamemaster/manifest.json",
 } as const;

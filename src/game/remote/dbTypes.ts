@@ -11,6 +11,8 @@ export type PlayerRow = {
 };
 
 export type ManitoRow = { giver_id: string; receiver_id: string };
-export type TaskRow = { task: Task };
+/** One row per participant: their three missions — dare, Manito photo, group photo, in order. */
+export type TaskRow = { missions: Task[] };
 export type PunishmentRow = { participant_id: string; punishment: Punishment };
-export type ProofRow = { proof: Proof };
+/** One row per (participant, mission) — up to three per participant. */
+export type ProofRow = { mission_id: string; proof: Proof };

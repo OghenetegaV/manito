@@ -3,6 +3,7 @@ import type {
   Assignment,
   GamePhase,
   GameState,
+  MissionSlot,
   Proof,
   Punishment,
   Task,
@@ -21,16 +22,16 @@ export type Action =
   | {
       type: "BEGIN_ASSIGNMENT";
       assignments: Assignment[];
-      tasks: Record<string, Task>;
+      tasks: Record<string, Task[]>;
       punishments: Record<string, Punishment>;
       simulatedSubmissions: Record<string, boolean>;
     }
   | { type: "ASSIGNMENT_DONE" }
   | { type: "OPEN_MISSION"; now: number }
   | { type: "ACCEPT_MISSION" }
-  | { type: "OPEN_PROOF" }
+  | { type: "OPEN_PROOF"; missionId: MissionSlot }
   | { type: "CLOSE_PROOF" }
-  | { type: "SUBMIT_PROOF"; proof: Proof }
+  | { type: "SUBMIT_PROOF"; missionId: MissionSlot; proof: Proof }
   | { type: "TIME_UP"; now: number }
   | { type: "OPEN_MIDNIGHT" }
   | { type: "AFTER_MIDNIGHT" }
@@ -87,9 +88,13 @@ export function everyoneReady(s: Pick<GameState, "presence" | "participants">): 
   return s.participants.every((p) => s.presence[p.id] === "ready");
 }
 
-/** Whether a participant's mission counted. Only meaningful from the deadline onward. */
+/** Whether a participant has handed in every piece of evidence. Only meaningful from the
+ * deadline onward. For the signed-in player this checks their own real proofs; for everyone
+ * else it reads the (preview-only) simulated flag. */
 export function didSubmit(s: GameState, participantId: string): boolean {
-  return participantId === s.currentUserId ? !!s.proof : !!s.simulatedSubmissions[participantId];
+  if (participantId !== s.currentUserId) return !!s.simulatedSubmissions[participantId];
+  const missions = s.tasks[participantId];
+  return !!missions && missions.length > 0 && missions.every((m) => !!s.proofs[m.id]);
 }
 
 export function failedIds(s: GameState): string[] {
@@ -112,7 +117,8 @@ export function createInitialState(): GameState {
     punishments: {},
     simulatedSubmissions: {},
     deadline: undefined,
-    proof: undefined,
+    proofs: {},
+    editingMissionId: undefined,
   };
 }
 
@@ -169,14 +175,17 @@ function applyData(state: GameState, action: Action, features: Features): GameSt
         tasks: action.tasks,
         punishments: action.punishments,
         simulatedSubmissions: action.simulatedSubmissions,
-        proof: undefined,
+        proofs: {},
+        editingMissionId: undefined,
         deadline: undefined,
       };
     case "OPEN_MISSION":
       return { ...state, deadline: features.schedule ? action.now + GAME_CONFIG.taskDurationMs : undefined };
+    case "OPEN_PROOF":
+      return { ...state, editingMissionId: action.missionId };
     case "SUBMIT_PROOF":
       if (!action.proof.media) return null;
-      return { ...state, proof: action.proof };
+      return { ...state, proofs: { ...state.proofs, [action.missionId]: action.proof } };
     case "TIME_UP":
       // Only counts if the clock has actually run out.
       return state.deadline !== undefined && action.now >= state.deadline ? state : null;

@@ -150,6 +150,12 @@
   text-decoration-color: var(--plum);
 }
 
+.nav__sound {
+  font-size: 1rem;
+  text-decoration: none;
+  letter-spacing: normal;
+}
+
 @media (max-width: 560px) {
   .nav__status {
     display: none;

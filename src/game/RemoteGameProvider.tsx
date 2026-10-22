@@ -8,9 +8,10 @@ import type { Action } from "./machine";
 import type { ManitoRow, PlayerRow, ProofRow, PunishmentRow, TaskRow } from "./remote/dbTypes";
 import * as remote from "./remote/queries";
 import { phaseAtLeast, PHASE_ORDER, selectPrivate, selectPublic, selectRevealed } from "./selectors";
-import type { Assignment, GamePhase, GameState, Presence, Proof, Punishment, Task } from "./types";
+import type { Assignment, GamePhase, GameState, MissionSlot, Presence, Proof, Punishment, Task } from "./types";
 
-const LOCAL_PHASE_KEY = "manito:v2:local-phase";
+const LOCAL_PHASE_KEY = "manito:v3:local-phase";
+const MISSIONS_PER_PLAYER = 3;
 
 function readLocalPhase(): GamePhase {
   try {
@@ -25,12 +26,12 @@ function readLocalPhase(): GamePhase {
  * Real multiplayer mode: up to five phones share one live game over Supabase. Four things are
  * genuinely shared (lobby presence, the draw, and — if FEATURES.schedule/consequences are ever
  * switched on — the deadline and the midnight reveal); everything after the draw (reading your
- * task, opening the evidence form) is personal screen-navigation and stays purely local to each
- * phone, so nobody is forced to move in lockstep with anyone else.
+ * missions, opening the evidence form) is personal screen-navigation and stays purely local to
+ * each phone, so nobody is forced to move in lockstep with anyone else.
  *
  * It rebuilds a GameState-shaped object from the live Supabase data each render and hands it to
  * the exact same selectPublic/selectPrivate/selectRevealed used by local mode — so a given
- * client only ever holds the slice of data it already has (its own task/manito/proof, plus
+ * client only ever holds the slice of data it already has (its own missions/manito/proofs, plus
  * everyone's once the reveal phase is reached), never anyone else's secrets.
  *
  * See supabase/README.md for what each table/column means, and schema.sql for the privacy rules.
@@ -43,10 +44,11 @@ export function RemoteGameProvider({ children }: { children: ReactNode }) {
   const [globalDeadlineMs, setGlobalDeadlineMs] = useState<number | undefined>();
   const [playerRows, setPlayerRows] = useState<PlayerRow[]>([]);
   const [localPhase, setLocalPhaseState] = useState<GamePhase>(readLocalPhase);
+  const [editingMissionId, setEditingMissionId] = useState<MissionSlot | undefined>();
 
   const [myManito, setMyManito] = useState<string | undefined>();
-  const [myTask, setMyTask] = useState<Task | undefined>();
-  const [myProof, setMyProof] = useState<Proof | undefined>();
+  const [myMissions, setMyMissions] = useState<Task[] | undefined>();
+  const [myProofs, setMyProofs] = useState<Record<string, Proof>>({});
 
   const [allAssignments, setAllAssignments] = useState<Assignment[] | undefined>();
   const [allSubmitted, setAllSubmitted] = useState<Record<string, boolean> | undefined>();
@@ -74,7 +76,7 @@ export function RemoteGameProvider({ children }: { children: ReactNode }) {
     return { presence: presenceMap, myId: id };
   }, [playerRows, authUid]);
 
-  /* ---- my own phase navigation: "the draw already happened" overrides to my own progress,
+  /* ---- my own mission navigation: "the draw already happened" overrides to my own progress,
      a shared dramatic moment (deadline/midnight/...) overrides everything, same as before. ---- */
   const effectivePhase: GamePhase =
     localPhase === "welcome"
@@ -143,7 +145,7 @@ export function RemoteGameProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  /* ---- 3. my own manito / task / proof, live — nobody else's ---- */
+  /* ---- 3. my own manito / missions / proofs, live — nobody else's ---- */
   useEffect(() => {
     if (!supabase || !myId) return;
     let alive = true;
@@ -151,13 +153,13 @@ export function RemoteGameProvider({ children }: { children: ReactNode }) {
 
     void Promise.all([
       client.from("manitos").select("receiver_id").eq("game_id", GAME_ID).eq("giver_id", myId).maybeSingle(),
-      client.from("tasks").select("task").eq("game_id", GAME_ID).eq("participant_id", myId).maybeSingle(),
-      client.from("proofs").select("proof").eq("game_id", GAME_ID).eq("participant_id", myId).maybeSingle(),
+      client.from("tasks").select("missions").eq("game_id", GAME_ID).eq("participant_id", myId).maybeSingle(),
+      client.from("proofs").select("mission_id, proof").eq("game_id", GAME_ID).eq("participant_id", myId),
     ]).then(([m, t, p]) => {
       if (!alive) return;
       if (m.data) setMyManito((m.data as ManitoRow).receiver_id);
-      if (t.data) setMyTask((t.data as TaskRow).task);
-      if (p.data) setMyProof((p.data as ProofRow).proof);
+      if (t.data) setMyMissions((t.data as TaskRow).missions);
+      if (p.data) setMyProofs(Object.fromEntries((p.data as ProofRow[]).map((row) => [row.mission_id, row.proof])));
     });
 
     const channel = client
@@ -172,11 +174,11 @@ export function RemoteGameProvider({ children }: { children: ReactNode }) {
       )
       .on("postgres_changes", { event: "*", schema: "public", table: "tasks", filter: `participant_id=eq.${myId}` }, (payload) => {
         const row = payload.new as TaskRow | undefined;
-        if (row) setMyTask(row.task);
+        if (row) setMyMissions(row.missions);
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "proofs", filter: `participant_id=eq.${myId}` }, (payload) => {
         const row = payload.new as ProofRow | undefined;
-        if (row) setMyProof(row.proof);
+        if (row) setMyProofs((prev) => ({ ...prev, [row.mission_id]: row.proof }));
       })
       .subscribe();
 
@@ -196,12 +198,23 @@ export function RemoteGameProvider({ children }: { children: ReactNode }) {
 
     void Promise.all([
       client.from("manitos").select("giver_id, receiver_id").eq("game_id", GAME_ID),
-      client.from("proofs").select("participant_id").eq("game_id", GAME_ID),
+      client.from("proofs").select("participant_id, mission_id").eq("game_id", GAME_ID),
       client.from("punishments").select("participant_id, punishment").eq("game_id", GAME_ID),
     ]).then(([m, p, pu]) => {
       if (!alive) return;
       setAllAssignments(((m.data ?? []) as ManitoRow[]).map((r) => ({ giverId: r.giver_id, receiverId: r.receiver_id })));
-      setAllSubmitted(Object.fromEntries(((p.data ?? []) as { participant_id: string }[]).map((r) => [r.participant_id, true])));
+
+      // "submitted" means all three mission slots have a proof row, not just one.
+      const counts = new Map<string, number>();
+      for (const row of (p.data ?? []) as { participant_id: string; mission_id: string }[]) {
+        counts.set(row.participant_id, (counts.get(row.participant_id) ?? 0) + 1);
+      }
+      setAllSubmitted(
+        Object.fromEntries(
+          GAME_CONFIG.participants.map((pt) => [pt.id, (counts.get(pt.id) ?? 0) >= MISSIONS_PER_PLAYER]),
+        ),
+      );
+
       setAllPunishments(
         Object.fromEntries(((pu.data ?? []) as PunishmentRow[]).map((r) => [r.participant_id, r.punishment])),
       );
@@ -227,9 +240,10 @@ export function RemoteGameProvider({ children }: { children: ReactNode }) {
         }
         return "lobby";
       });
+      setEditingMissionId(undefined);
       setMyManito(undefined);
-      setMyTask(undefined);
-      setMyProof(undefined);
+      setMyMissions(undefined);
+      setMyProofs({});
       setAllAssignments(undefined);
       setAllSubmitted(undefined);
       setAllPunishments(undefined);
@@ -286,6 +300,7 @@ export function RemoteGameProvider({ children }: { children: ReactNode }) {
           setLocalPhase("countdown");
           return;
         case "OPEN_PROOF":
+          setEditingMissionId(action.missionId);
           setLocalPhase("proof");
           return;
         case "CLOSE_PROOF":
@@ -294,8 +309,10 @@ export function RemoteGameProvider({ children }: { children: ReactNode }) {
 
         case "SUBMIT_PROOF":
           if (!myId) return;
-          setMyProof(action.proof); // optimistic: avoids a flash back to the empty form while the write is in flight
-          void remote.submitProof(myId, action.proof).catch((err) => console.error("MANITO: couldn't submit evidence", err));
+          setMyProofs((prev) => ({ ...prev, [action.missionId]: action.proof })); // optimistic: avoids a flash back to the empty form while the write is in flight
+          void remote
+            .submitProof(myId, action.missionId, action.proof)
+            .catch((err) => console.error("MANITO: couldn't submit evidence", err));
           return;
 
         case "TIME_UP":
@@ -344,13 +361,26 @@ export function RemoteGameProvider({ children }: { children: ReactNode }) {
       presence,
       currentUserId: myId,
       assignments: allAssignments ?? (myId && myManito ? [{ giverId: myId, receiverId: myManito }] : []),
-      tasks: myId && myTask ? { [myId]: myTask } : {},
+      tasks: myId && myMissions ? { [myId]: myMissions } : {},
       punishments: allPunishments ?? {},
       simulatedSubmissions: allSubmitted ?? {},
       deadline: globalDeadlineMs,
-      proof: myProof,
+      proofs: myProofs,
+      editingMissionId,
     }),
-    [effectivePhase, presence, myId, allAssignments, myManito, myTask, allPunishments, allSubmitted, globalDeadlineMs, myProof],
+    [
+      effectivePhase,
+      presence,
+      myId,
+      allAssignments,
+      myManito,
+      myMissions,
+      allPunishments,
+      allSubmitted,
+      globalDeadlineMs,
+      myProofs,
+      editingMissionId,
+    ],
   );
 
   const api: GameApi = useMemo(

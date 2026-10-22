@@ -9,12 +9,16 @@ type UploadAreaProps = {
   media?: ProofMedia;
   busy?: boolean;
   error?: string;
+  /** Restricts the file picker/drop target. Defaults to accepting either. */
+  accept?: string;
+  /** Hint line under the drop zone. Defaults to a generic video-or-photo note. */
+  hint?: string;
   onFile: (file: File) => void;
   onClear: () => void;
 };
 
 /** Drop zone with a real file input behind it, so keyboard and screen-reader users are covered. */
-export function UploadArea({ media, busy, error, onFile, onClear }: UploadAreaProps) {
+export function UploadArea({ media, busy, error, accept = "video/*,image/*", hint, onFile, onClear }: UploadAreaProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const hintId = useId();
   const [dragging, setDragging] = useState(false);
@@ -32,7 +36,7 @@ export function UploadArea({ media, busy, error, onFile, onClear }: UploadAreaPr
         ref={inputRef}
         className="sr-only"
         type="file"
-        accept="video/*,image/*"
+        accept={accept}
         tabIndex={-1}
         aria-describedby={hintId}
         onChange={(e) => {
@@ -71,7 +75,9 @@ export function UploadArea({ media, busy, error, onFile, onClear }: UploadAreaPr
           onDrop={onDrop}
         >
           <Doodle name="sparkle" size={28} className="upload__spark" />
-          <p className="eyebrow">{busy ? "Getting it ready…" : "Drop your video or photo here"}</p>
+          <p className="eyebrow">
+            {busy ? "Getting it ready…" : accept === "video/*" ? "Drop your video here" : accept === "image/*" ? "Drop your photo here" : "Drop your video or photo here"}
+          </p>
           <p className="upload__or hand">or</p>
           <Button variant="ghost" onClick={() => inputRef.current?.click()} loading={busy}>
             Choose file
@@ -80,7 +86,7 @@ export function UploadArea({ media, busy, error, onFile, onClear }: UploadAreaPr
       )}
 
       <p id={hintId} className="upload__hint" role={error ? "alert" : undefined} data-error={!!error}>
-        {error ?? "A video of the moment is best. Don't film strangers' faces without their permission."}
+        {error ?? hint ?? "Don't film or photograph strangers' faces without their permission."}
       </p>
     </div>
   );

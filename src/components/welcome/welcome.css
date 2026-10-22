@@ -79,6 +79,19 @@
   transform: rotate(7deg);
 }
 
+.soundcheck__title {
+  position: relative;
+  display: inline-block;
+  padding-inline: 8px;
+}
+
+.soundcheck__spark {
+  position: absolute;
+  top: -20px;
+  right: -16px;
+  transform: rotate(10deg);
+}
+
 .welcome__lines {
   display: flex;
   flex-direction: column;

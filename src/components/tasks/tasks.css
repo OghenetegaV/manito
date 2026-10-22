@@ -167,6 +167,16 @@
   display: grid;
 }
 
+.seal__missions {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.seal__missions > .tcard {
+  width: 100%;
+}
+
 .seal__closed {
   position: relative;
   display: flex;
@@ -215,7 +225,34 @@
 /* ---------- mission hub ---------- */
 
 .hub {
-  gap: clamp(22px, 3.6vh, 38px);
+  gap: clamp(18px, 3vh, 30px);
+}
+
+.hub__progress {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.hub__list {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.hub__row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.hub__row-actions {
+  gap: 10px;
 }
 
 .hub__note {

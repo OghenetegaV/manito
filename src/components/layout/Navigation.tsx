@@ -1,17 +1,22 @@
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Doodle } from "@/components/decor/Doodles";
 import { PHASE_LABELS } from "@/config/gameConfig";
 import { usePublicGame } from "@/game/GameProvider";
+import { audio } from "@/services/audio";
 
 type NavigationProps = {
   onOpenRules: () => void;
   onOpenGame: () => void;
 };
 
-/** Deliberately spare: a wordmark, a status sticker, two quiet links. */
+/** Deliberately spare: a wordmark, a status sticker, two quiet links, and the mute toggle. */
 export function Navigation({ onOpenRules, onOpenGame }: NavigationProps) {
   const game = usePublicGame();
   const visible = game.phase !== "welcome";
+  const [muted, setMuted] = useState(audio.muted);
+
+  useEffect(() => audio.subscribe(() => setMuted(audio.muted)), []);
 
   const status =
     game.phase === "lobby" ? `${game.readyCount}/${game.participants.length} ready` : PHASE_LABELS[game.phase];
@@ -33,6 +38,15 @@ export function Navigation({ onOpenRules, onOpenGame }: NavigationProps) {
             <span className="nav__status" aria-live="polite">
               {status}
             </span>
+            <button
+              type="button"
+              className="nav__link nav__sound"
+              onClick={() => audio.toggleMuted()}
+              aria-label={muted ? "Unmute sound" : "Mute sound"}
+              aria-pressed={muted}
+            >
+              {muted ? "🔇" : "🔊"}
+            </button>
             <button type="button" className="nav__link" onClick={onOpenRules}>
               Rules
             </button>

@@ -41,11 +41,12 @@ create table if not exists manitos (
   primary key (game_id, giver_id)
 );
 
--- One row per participant: their secret task. Same privacy shape as manitos.
+-- One row per participant: their three missions (dare, Manito photo, group photo), as a jsonb
+-- array in that order. Same privacy shape as manitos.
 create table if not exists tasks (
   game_id text not null references games(id) on delete cascade,
   participant_id text not null,
-  task jsonb not null,
+  missions jsonb not null,
   primary key (game_id, participant_id)
 );
 
@@ -58,15 +59,18 @@ create table if not exists punishments (
   primary key (game_id, participant_id)
 );
 
--- One row per participant: their submitted evidence. Owner can always read/write their own;
--- everyone can read everyone's once the reveal phase is reached (the house rules say "everyone
--- reveals their task and shows their proof" — this is the row that makes that true later).
+-- Up to three rows per participant — one per mission_id ('dare' | 'manito-photo' |
+-- 'group-photo') — holding their submitted evidence for that mission. Owner can always
+-- read/write their own; everyone can read everyone's once the reveal phase is reached (the
+-- house rules say everyone reveals their missions and shows their proof — this is the row
+-- that makes that true later).
 create table if not exists proofs (
   game_id text not null references games(id) on delete cascade,
   participant_id text not null,
+  mission_id text not null,
   proof jsonb not null,
   submitted_at timestamptz not null default now(),
-  primary key (game_id, participant_id)
+  primary key (game_id, participant_id, mission_id)
 );
 
 -- ───────────────────────── row level security ─────────────────────────
@@ -177,16 +181,27 @@ create policy "proofs update own" on proofs for update using (
 
 -- ───────────────────────── the draw ─────────────────────────
 
--- Generates the pairing, deals one task and one consequence per participant, and moves the
--- game to 'assignment' — all inside one transaction, so two phones tapping "Find our Manitos"
--- at the same moment can never produce two different draws. The row lock on `games` makes the
--- second caller wait for the first to finish, then see phase <> 'ready' and quietly no-op.
+-- Generates the pairing, deals each participant's three missions (one dare, the shared
+-- Manito-photo brief, one group-photo challenge) and one consequence, and moves the game to
+-- 'assignment' — all inside one transaction, so two phones tapping "Find our Manitos" at the
+-- same moment can never produce two different draws. The row lock on `games` makes the second
+-- caller wait for the first to finish, then see phase <> 'ready' and quietly no-op.
 --
--- p_tasks / p_punishments are the app's own catalogs (GAME_CONFIG.tasks / .punishments), passed
--- in as jsonb so this function never has to duplicate that content in SQL.
+-- p_dares / p_group_photos / p_punishments are the app's own catalogs (GAME_CONFIG.dares /
+-- .groupPhotoChallenges / .punishments); p_manito_photo is the single shared brief
+-- (GAME_CONFIG.manitoPhotoBrief) — passed in as jsonb so this function never has to duplicate
+-- that content in SQL.
+--
+-- The parameter list changed from an earlier version (a single p_tasks instead of
+-- p_dares/p_manito_photo/p_group_photos) — Postgres treats a different signature as a separate
+-- overload, so the old one is dropped explicitly rather than silently left behind.
+drop function if exists begin_draw(text, jsonb, jsonb, bigint);
+
 create or replace function begin_draw(
   p_game_id text,
-  p_tasks jsonb,
+  p_dares jsonb,
+  p_manito_photo jsonb,
+  p_group_photos jsonb,
   p_punishments jsonb,
   p_deadline_ms bigint
 )
@@ -204,9 +219,11 @@ declare
   v_swap text;
   fy_i int;
   fy_j int;
-  v_tasks jsonb[];
+  v_dares jsonb[];
+  v_group_photos jsonb[];
   v_punishments jsonb[];
-  v_tcount int;
+  v_dcount int;
+  v_gcount int;
   v_pcount int;
   v_attempt int;
 begin
@@ -252,13 +269,23 @@ begin
   insert into manitos (game_id, giver_id, receiver_id)
   select p_game_id, v_ids[gi], v_perm[gi] from generate_series(1, v_n) gi;
 
-  select array_agg(elem order by random()) into v_tasks from jsonb_array_elements(p_tasks) elem;
+  select array_agg(elem order by random()) into v_dares from jsonb_array_elements(p_dares) elem;
+  select array_agg(elem order by random()) into v_group_photos from jsonb_array_elements(p_group_photos) elem;
   select array_agg(elem order by random()) into v_punishments from jsonb_array_elements(p_punishments) elem;
-  v_tcount := array_length(v_tasks, 1);
+  v_dcount := array_length(v_dares, 1);
+  v_gcount := array_length(v_group_photos, 1);
   v_pcount := array_length(v_punishments, 1);
 
-  insert into tasks (game_id, participant_id, task)
-  select p_game_id, v_ids[gi], v_tasks[1 + ((gi - 1) % v_tcount)]
+  -- each participant's three missions, in a fixed order: dare, Manito photo, group photo
+  insert into tasks (game_id, participant_id, missions)
+  select
+    p_game_id,
+    v_ids[gi],
+    jsonb_build_array(
+      v_dares[1 + ((gi - 1) % v_dcount)],
+      p_manito_photo,
+      v_group_photos[1 + ((gi - 1) % v_gcount)]
+    )
   from generate_series(1, v_n) gi;
 
   insert into punishments (game_id, participant_id, punishment)
@@ -273,7 +300,7 @@ begin
 end;
 $$;
 
-grant execute on function begin_draw(text, jsonb, jsonb, bigint) to anon, authenticated;
+grant execute on function begin_draw(text, jsonb, jsonb, jsonb, jsonb, bigint) to anon, authenticated;
 
 -- ───────────────────────── restart ─────────────────────────
 

@@ -12,8 +12,9 @@ import { TaskCard } from "./TaskCard";
 import "./tasks.css";
 
 /**
- * A sealed envelope. Until the seal is broken the page holds no task text at all,
- * so nothing secret is in the DOM to be read over a shoulder.
+ * A sealed envelope. Until the seal is broken the page holds no mission text at all, so
+ * nothing secret is in the DOM to be read over a shoulder. Breaking it reveals all three
+ * missions at once — the dare and both picture challenges.
  */
 export function TaskReveal() {
   const secret = usePrivateGame();
@@ -21,26 +22,28 @@ export function TaskReveal() {
   const dispatch = useGameDispatch();
   const [open, setOpen] = useState(false);
 
-  if (!secret?.task) return null;
-  const { task } = secret;
+  if (!secret || secret.missions.length === 0) return null;
+  const { missions, manito } = secret;
 
   return (
     <section className="scene reveal-task" aria-labelledby="task-title">
       <div className="stack">
         <p className="eyebrow eyebrow--accent">Top secret · girls only</p>
         <h1 id="task-title" className="display display-lg">
-          {open ? "Shh. Here it is." : "Your secret task"}
+          {open ? "Shh. Here they are." : "Your secret missions"}
         </h1>
       </div>
 
       <div className="seal">
         {open ? (
           <motion.div
-            className="seal__open"
+            className="seal__open seal__missions"
             initial={{ opacity: 0, y: 24, rotate: -1.5, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, rotate: 0, scale: 1, transition: { duration: 0.7, ease: EASE_OUT } }}
           >
-            <TaskCard task={task} status="active" />
+            {missions.map((m) => (
+              <TaskCard key={m.mission.id} task={m.mission} status="active" manitoName={manito?.name} />
+            ))}
           </motion.div>
         ) : (
           <div className="seal__closed">
@@ -49,7 +52,7 @@ export function TaskReveal() {
               Top secret
             </span>
             <p className="lede italic">Sealed. Only you can open it.</p>
-            <p className="hand seal__hint">make sure nobody's looking</p>
+            <p className="hand seal__hint">one dare, two picture challenges</p>
             <Doodle name="sparkle" size={26} className="seal__spark seal__spark--a" />
             <Doodle name="heart" size={22} color="#f4b6c2" className="seal__spark seal__spark--b" />
           </div>

@@ -26,7 +26,7 @@ export type GamePhase =
 
 export type Presence = "waiting" | "joined" | "ready";
 
-/** A piece of a task's write-up, rendered in order. */
+/** A piece of a mission's write-up, rendered in order. */
 export type TaskBlock =
   | { kind: "p"; text: string }
   | { kind: "list"; title?: string; items: string[] }
@@ -34,13 +34,28 @@ export type TaskBlock =
   /** A stage direction between lines, e.g. "dramatic pause". */
   | { kind: "aside"; text: string };
 
+export type ProofKind = "video" | "photo";
+
+/** The three mission slots every player gets, fixed by the house rules: one dare and two
+ * picture challenges. Used as the stable id for each mission and as the key for its proof. */
+export type MissionSlot = "dare" | "manito-photo" | "group-photo";
+
+export const MISSION_SLOTS: readonly MissionSlot[] = ["dare", "manito-photo", "group-photo"];
+
+/**
+ * One assignment — a dare (video) or one of the two picture challenges (photo). Text may
+ * contain a `{{manito}}` token, filled in at render time (see fillTemplate in config/missions.ts)
+ * once the player's own Manito is known, so the same stored brief can read as a personal one.
+ */
 export type Task = {
-  id: string;
+  id: MissionSlot;
+  kind: MissionSlot;
   emoji: string;
   /** Short name for the card; the write-up itself is `blocks`. */
   title: string;
   blocks: TaskBlock[];
   bonus?: string;
+  proofRequired: ProofKind;
   proof: string;
   warning?: string;
 };
@@ -105,11 +120,15 @@ export type GameState = {
   presence: Record<string, Presence>;
   currentUserId?: string;
   assignments: Assignment[];
-  tasks: Record<string, Task>;
+  /** Each participant's three missions: dare, Manito photo, group photo — in that order. */
+  tasks: Record<string, Task[]>;
   punishments: Record<string, Punishment>;
   /** Preview only: stands in for the other girls' submissions. */
   simulatedSubmissions: Record<string, boolean>;
   /** Epoch ms. */
   deadline?: number;
-  proof?: Proof;
+  /** The current player's own proofs, keyed by MissionSlot. Never anyone else's. */
+  proofs: Record<string, Proof>;
+  /** Which of the current player's missions the Evidence screen is open on. */
+  editingMissionId?: MissionSlot;
 };

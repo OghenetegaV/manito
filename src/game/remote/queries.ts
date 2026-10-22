@@ -1,7 +1,7 @@
 import { GAME_CONFIG } from "@/config/gameConfig";
 import { GAME_ID } from "@/lib/remoteMode";
 import { supabase } from "@/lib/supabaseClient";
-import type { GamePhase, Proof } from "@/game/types";
+import type { GamePhase, MissionSlot, Proof } from "@/game/types";
 
 /**
  * The write side of remote mode. Reads live inline in RemoteGameProvider's effects (they're
@@ -80,15 +80,18 @@ export async function setDeadline(deadlineMs: number | undefined): Promise<void>
 }
 
 /**
- * Generates the pairing and deals tasks/consequences, atomically, on the server — see
- * begin_draw() in supabase/schema.sql. The app's own task/punishment catalogs are passed in so
- * the SQL function never has to duplicate that content.
+ * Generates the pairing and deals missions/consequences, atomically, on the server — see
+ * begin_draw() in supabase/schema.sql. The app's own catalogs are passed in so the SQL
+ * function never has to duplicate that content. Each participant gets one dare, the shared
+ * Manito-photo brief, and one group-photo challenge.
  */
 export async function beginDraw(): Promise<void> {
   const deadlineMs = GAME_CONFIG.features.schedule ? Date.now() + GAME_CONFIG.taskDurationMs : null;
   const { error } = await client().rpc("begin_draw", {
     p_game_id: GAME_ID,
-    p_tasks: GAME_CONFIG.tasks,
+    p_dares: GAME_CONFIG.dares,
+    p_manito_photo: GAME_CONFIG.manitoPhotoBrief,
+    p_group_photos: GAME_CONFIG.groupPhotoChallenges,
     p_punishments: GAME_CONFIG.punishments,
     p_deadline_ms: deadlineMs,
   });
@@ -102,12 +105,18 @@ export async function restartGame(): Promise<void> {
 }
 
 /** Ownership is enforced by RLS (see "proofs insert/update own" in schema.sql), via the caller's own session. */
-export async function submitProof(participantId: string, proof: Proof): Promise<void> {
+export async function submitProof(participantId: string, missionId: MissionSlot, proof: Proof): Promise<void> {
   const { error } = await client()
     .from("proofs")
     .upsert(
-      { game_id: GAME_ID, participant_id: participantId, proof, submitted_at: new Date(proof.submittedAt).toISOString() },
-      { onConflict: "game_id,participant_id" },
+      {
+        game_id: GAME_ID,
+        participant_id: participantId,
+        mission_id: missionId,
+        proof,
+        submitted_at: new Date(proof.submittedAt).toISOString(),
+      },
+      { onConflict: "game_id,participant_id,mission_id" },
     );
   if (error) throw error;
 }

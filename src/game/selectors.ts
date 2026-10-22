@@ -72,19 +72,28 @@ export function selectPublic(s: GameState): PublicGame {
 
 /* ---------------------------- private ----------------------------- */
 
+/** One mission plus whatever the current player has (or hasn't) submitted for it. */
+export type MissionProgress = {
+  mission: Task;
+  proof?: Proof;
+  status: TaskStatus;
+};
+
 export type PrivateGame = {
   me: Participant;
   manito?: Participant;
-  task?: Task;
-  proof?: Proof;
-  taskStatus: TaskStatus;
+  /** The dare, then the Manito photo, then the group photo — in that fixed order. */
+  missions: MissionProgress[];
+  /** The mission the Evidence screen is currently open on, if any. */
+  editing?: MissionProgress;
+  /** True once every mission has a proof attached. */
+  allSubmitted: boolean;
   /** Only set once the consequence has been announced. */
   punishment?: Punishment;
 };
 
-export function taskStatusFor(s: GameState): TaskStatus {
-  const hasProof = !!s.proof;
-  switch (s.phase) {
+export function missionStatusFor(phase: GamePhase, hasProof: boolean): TaskStatus {
+  switch (phase) {
     case "manito-reveal":
       return "locked";
     case "task":
@@ -108,13 +117,19 @@ export function selectPrivate(s: GameState): PrivateGame | null {
   if (!me || !phaseAtLeast(s.phase, "manito-reveal")) return null;
 
   const receiverId = s.assignments.find((a) => a.giverId === me.id)?.receiverId;
+  const myMissions = s.tasks[me.id] ?? [];
+  const missions: MissionProgress[] = myMissions.map((mission) => {
+    const proof = s.proofs[mission.id];
+    return { mission, proof, status: missionStatusFor(s.phase, !!proof) };
+  });
+
   const showPunishment = s.phase === "punishment" || s.phase === "complete";
   return {
     me,
     manito: s.participants.find((p) => p.id === receiverId),
-    task: s.tasks[me.id],
-    proof: s.proof,
-    taskStatus: taskStatusFor(s),
+    missions,
+    editing: s.editingMissionId ? missions.find((m) => m.mission.id === s.editingMissionId) : undefined,
+    allSubmitted: missions.length > 0 && missions.every((m) => !!m.proof),
     punishment: showPunishment && !didSubmit(s, me.id) ? s.punishments[me.id] : undefined,
   };
 }
