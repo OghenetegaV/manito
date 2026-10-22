@@ -112,12 +112,26 @@
   display: grid;
   place-items: center;
   gap: 18px;
+  /* grid items default to a content-based minimum width that ignores max-width/wrapping
+     unless this is set — matters here since long names (DUMADE) need to be able to shrink */
+  min-width: 0;
+  max-width: 100%;
 }
 
 .manito__name {
   letter-spacing: 0.06em;
-  line-height: 1;
+  line-height: 1.05;
   color: var(--plum);
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+
+/* longer names (DUMADE) get a smaller ceiling so the reveal stays on one dramatic line
+   instead of wrapping */
+.manito__name[data-long="true"] {
+  font-size: clamp(2rem, 7vw, 4.5rem);
 }
 
 .manito__name--blur {

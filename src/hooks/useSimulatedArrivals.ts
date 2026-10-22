@@ -5,7 +5,7 @@ import { useGameDispatch, usePublicGame } from "@/game/GameProvider";
 
 /**
  * PREVIEW ONLY. With no backend there are no other players, so once you've taken your seat
- * the other four "arrive" and ready up on a staggered schedule. Replace this hook with
+ * the other girls "arrive" and ready up on a staggered schedule. Replace this hook with
  * real presence updates and nothing else in the lobby has to change.
  */
 export function useSimulatedArrivals(active: boolean) {

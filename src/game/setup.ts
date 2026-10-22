@@ -6,7 +6,7 @@ import type { Participant } from "./types";
 /**
  * Builds everything a round needs in one pass: pairings, one mission per giver,
  * a consequence per giver (only ever shown to whoever fails), and — for the
- * preview, where the other four aren't real clients — who "submits" in time.
+ * preview, where the other players aren't real clients — who "submits" in time.
  */
 export function createRound(
   participants: readonly Participant[],

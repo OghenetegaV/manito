@@ -107,7 +107,7 @@ export type GameState = {
   assignments: Assignment[];
   tasks: Record<string, Task>;
   punishments: Record<string, Punishment>;
-  /** Preview only: stands in for the other four girls' submissions. */
+  /** Preview only: stands in for the other girls' submissions. */
   simulatedSubmissions: Record<string, boolean>;
   /** Epoch ms. */
   deadline?: number;

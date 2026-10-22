@@ -35,8 +35,8 @@ function toTask(reducer: typeof live, seed = 1, me = "lola"): GameState {
 }
 
 describe("the cast and the tasks", () => {
-  it("has four girls, and Rey is not one of them", () => {
-    expect(PARTICIPANTS.map((p) => p.name)).toEqual(["TIA", "LOLA", "ORE", "OPE"]);
+  it("has five girls, and Rey is not one of them", () => {
+    expect(PARTICIPANTS.map((p) => p.name)).toEqual(["TIA", "LOLA", "ORE", "OPE", "DUMADE"]);
   });
 
   it("gives every girl a different task", () => {

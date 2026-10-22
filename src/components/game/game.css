@@ -84,8 +84,14 @@ button.pcard:hover {
   font-size: 1.75rem;
   font-weight: 900;
   letter-spacing: 0.06em;
-  line-height: 1;
+  line-height: 1.05;
   color: inherit;
+  /* names vary in length (DUMADE vs TIA) — wrap within the card instead of overflowing it.
+     min-width: 0 is load-bearing: grid items default to a content-based automatic minimum
+     size that ignores max-width/overflow-wrap unless this is set. */
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: break-word;
 }
 
 .pcard__status {
@@ -176,8 +182,13 @@ button.pcard:hover {
 
 @container stage (min-width: 720px) {
   .pgrid {
-    max-width: 880px;
-    grid-template-columns: repeat(4, 1fr);
+    max-width: 1040px;
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  /* five narrow columns: give longer names (DUMADE) room to breathe at a slightly smaller size */
+  .pcard__name {
+    font-size: clamp(1.5rem, 2.4vw, 2.25rem);
   }
 }
 

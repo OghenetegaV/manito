@@ -305,7 +305,7 @@ insert into games (id, phase) values ('default', 'lobby')
 
 insert into players (game_id, participant_id, status)
 select 'default', p.id, 'waiting'
-from (values ('tia'), ('lola'), ('ore'), ('ope')) as p(id)
+from (values ('tia'), ('lola'), ('ore'), ('ope'), ('dumade')) as p(id)
 on conflict (game_id, participant_id) do nothing;
 
 -- ───────────────────────── realtime ─────────────────────────

@@ -45,7 +45,11 @@ export function ManitoReveal() {
               animate={{ opacity: 1, filter: "blur(0px)", y: 0, scale: 1, transition: { duration: 1.1, ease: EASE_OUT } }}
             >
               <span className="manito__ring" aria-hidden="true" />
-              <p className="display display-xl manito__name" aria-live="polite">
+              <p
+                className="display display-xl manito__name"
+                data-long={secret.manito.name.length > 5}
+                aria-live="polite"
+              >
                 {secret.manito.name}
               </p>
               <motion.span

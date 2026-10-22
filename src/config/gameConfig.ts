@@ -15,6 +15,7 @@ export const PARTICIPANTS: Participant[] = [
   { id: "lola", name: "LOLA" },
   { id: "ore", name: "ORE" },
   { id: "ope", name: "OPE" },
+  { id: "dumade", name: "DUMADE" },
 ];
 
 /**

@@ -1,13 +1,13 @@
 # MANITO
 
-A private random-pairing game for four: TIA, LOLA, ORE and OPE. A Game Master (an original cat-girl mascot)
-narrates the game. Each girl is secretly assigned a Manito and a secret task from the Secret Task Challenge
-brief, and hands in a photo or video as evidence once it's done.
+A private random-pairing game for five: TIA, LOLA, ORE, OPE and DUMADE. A Game Master (an original cat-girl
+mascot) narrates the game. Each girl is secretly assigned a Manito and a secret task from the Secret Task
+Challenge brief, and hands in a photo or video as evidence once it's done.
 
 React 19, TypeScript, Vite, Framer Motion. Runs two ways:
 
 - **Local/demo mode** (default, no setup): one browser, one device, the other players simulated.
-- **Real multiplayer** (optional): up to four phones share one live game over Supabase — see
+- **Real multiplayer** (optional): up to five phones share one live game over Supabase — see
   [supabase/README.md](supabase/README.md) to turn it on. The app detects which mode it's in automatically;
   nothing else changes.
 
@@ -93,7 +93,7 @@ against someone poking at their own network tab. Tests in `src/game/machine.test
 ## Real multiplayer (Supabase)
 
 Turning this on (see [supabase/README.md](supabase/README.md) for the setup steps) is what makes "how does
-each person join from their own phone" actually true: four phones, one shared lobby, live presence, and a
+each person join from their own phone" actually true: five phones, one shared lobby, live presence, and a
 draw that happens exactly once, server-side, so two phones tapping "Find our Manitos" at the same instant
 can never produce two different pairings.
 
@@ -108,7 +108,7 @@ The shape of it:
   same seat.
 - Lobby presence, the draw's result, each player's own task, and each player's own evidence are all synced
   live (Postgres Realtime). What's actually shared vs. personal: joining/readying/the draw are a genuinely
-  shared moment across all four phones; reading your task and submitting evidence afterward is personal
+  shared moment across all five phones; reading your task and submitting evidence afterward is personal
   screen-navigation on each phone and never blocks on where anyone else is.
 - Row Level Security (`supabase/schema.sql`) is what actually keeps a task/manito/proof private to its owner
   — a player's own device can only ever `SELECT` its own rows for those tables, until the reveal phase makes

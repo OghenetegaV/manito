@@ -22,7 +22,7 @@ function readLocalPhase(): GamePhase {
 }
 
 /**
- * Real multiplayer mode: up to four phones share one live game over Supabase. Four things are
+ * Real multiplayer mode: up to five phones share one live game over Supabase. Four things are
  * genuinely shared (lobby presence, the draw, and — if FEATURES.schedule/consequences are ever
  * switched on — the deadline and the midnight reveal); everything after the draw (reading your
  * task, opening the evidence form) is personal screen-navigation and stays purely local to each
@@ -269,7 +269,7 @@ export function RemoteGameProvider({ children }: { children: ReactNode }) {
 
         case "BEGIN_ASSIGNMENT":
           // the payload was computed client-side for local mode's benefit; remote mode discards
-          // it and draws server-side instead, so four phones can never produce four different draws.
+          // it and draws server-side instead, so two phones can never produce two different draws.
           void remote.beginDraw().catch((err) => {
             console.error("MANITO: couldn't begin the draw", err);
             toast.push("Couldn't start the draw — try again");
