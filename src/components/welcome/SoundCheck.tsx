@@ -30,22 +30,22 @@ export function SoundCheck({ onContinue }: { onContinue: () => void }) {
       exit={{ opacity: 0, transition: { duration: 0.35 } }}
     >
       <div className="stack">
-        <p className="eyebrow eyebrow--accent">Before we begin</p>
+        <p className="eyebrow eyebrow--accent">Before you start</p>
         <div className="soundcheck__title">
           <h1 id="soundcheck-title" className="display display-lg">
-            Turn your volume up. 🔊
+            Turn your volume up.
           </h1>
           <Doodle name="sparkle" size={30} className="soundcheck__spark" />
         </div>
-        <p className="lede">There's a theme song, and the game likes to make a little noise.</p>
+        <p className="lede">This game has music and sound effects.</p>
       </div>
 
       <div className="actions">
         <Button variant="quiet" onClick={continueMuted}>
-          Continue without sound
+          Skip sound
         </Button>
         <Button size="lg" arrow onClick={continueWithSound}>
-          Sound's up, let's go
+          Turn on sound
         </Button>
       </div>
     </motion.section>

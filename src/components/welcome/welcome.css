@@ -92,6 +92,22 @@
   transform: rotate(10deg);
 }
 
+.welcome__demo-link {
+  margin-top: -6px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-soft);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--blush);
+}
+
+.welcome__demo-link:hover {
+  color: var(--plum);
+  text-decoration-color: var(--plum);
+}
+
 .welcome__lines {
   display: flex;
   flex-direction: column;

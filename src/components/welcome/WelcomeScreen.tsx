@@ -5,6 +5,7 @@ import { useCurtain } from "@/components/layout/Curtain";
 import { PARTICIPANTS } from "@/config/gameConfig";
 import { useGameDispatch } from "@/game/GameProvider";
 import { useTimeline } from "@/hooks/useTimeline";
+import { isRemoteMode } from "@/lib/remoteMode";
 import { capitalise, numberWord } from "@/lib/words";
 import { Reveal } from "@/motion/Reveal";
 import { EASE_IN_OUT } from "@/motion/variants";
@@ -81,6 +82,14 @@ export function WelcomeScreen() {
       <Reveal show={step >= 5}>
         <EnterGameButton onEnter={enter} disabled={leaving} />
       </Reveal>
+
+      {isRemoteMode && (
+        <Reveal show={step >= 5}>
+          <a href="?demo=1" className="welcome__demo-link" onClick={(e) => e.stopPropagation()}>
+            Try a 1-player demo first
+          </a>
+        </Reveal>
+      )}
     </motion.section>
   );
 }

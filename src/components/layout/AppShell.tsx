@@ -9,9 +9,11 @@ import { Rules } from "@/components/game/Rules";
 import { SoundCheck } from "@/components/welcome/SoundCheck";
 import { Drawer } from "@/components/ui/Drawer";
 import { Modal } from "@/components/ui/Modal";
+import { isDemoMode } from "@/lib/remoteMode";
 import { PHASE_VIEWS } from "@/phaseViews";
 import { AmbientBackground, type Mood } from "./AmbientBackground";
 import { useCurtain } from "./Curtain";
+import { DemoBanner } from "./DemoBanner";
 import { Loading } from "./Loading";
 import { Navigation } from "./Navigation";
 import { NoiseOverlay } from "./NoiseOverlay";
@@ -55,10 +57,11 @@ export function AppShell() {
   const showSoundCheck = game.phase === "welcome" && !soundChecked;
 
   return (
-    <div className="shell" data-phase={game.phase} data-gm={gm?.size ?? "none"}>
+    <div className="shell" data-phase={game.phase} data-gm={gm?.size ?? "none"} data-demo={isDemoMode || undefined}>
       <a className="skip-link" href="#main">
         Skip to the game
       </a>
+      <DemoBanner />
       <AmbientBackground mood={mood} />
       <NoiseOverlay />
       <Navigation onOpenRules={() => setRulesOpen(true)} onOpenGame={() => setGameOpen(true)} />
