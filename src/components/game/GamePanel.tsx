@@ -39,6 +39,18 @@ export function GamePanel({ onClose }: { onClose: () => void }) {
         </ul>
       </section>
 
+      {isRemoteMode && (
+        <section className="panel__section" aria-label="Demo">
+          <p className="eyebrow">Demo</p>
+          <p className="panel__hint">Try the whole flow by yourself. Doesn't touch the real game or the other phones.</p>
+          <div className="actions" style={{ justifyContent: "flex-start" }}>
+            <Button variant="ghost" onClick={() => (window.location.href = "?demo=1")}>
+              Try a 1-player demo
+            </Button>
+          </div>
+        </section>
+      )}
+
       {FEATURES.schedule && PREVIEW_TOOLS && clockRunning && (
         <section className="panel__section" aria-label="Preview tools">
           <p className="eyebrow eyebrow--accent">Preview tools</p>
